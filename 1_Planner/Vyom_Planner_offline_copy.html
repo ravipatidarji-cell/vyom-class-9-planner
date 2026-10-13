@@ -229,7 +229,8 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
       <h1><span class="hl">Vyom</span> ka Class 9 Planner</h1>
       <p class="sub" id="hsub">NDPS 2026-27 · 12 Oct → 17 Mar · har din ka kaam, revision aur test</p>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button id="pwa-share-link-btn" class="chip" type="button" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:700;background:var(--accent-soft);color:var(--accent);border-color:var(--accent)">🔗 App Link Bhejein</button>
       <button id="pwa-install-btn" class="btn-install-app" type="button" style="display:none;align-items:center;gap:6px;background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:700 13.5px var(--body);cursor:pointer;box-shadow:0 2px 8px rgba(47,79,216,0.35)">📲 App Install</button>
       <div class="counts" id="counts"></div>
     </div>
@@ -509,6 +510,27 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
   </div>
   <div style="margin-top:16px;display:flex;justify-content:flex-end">
     <button id="dismiss-install-dialog" type="button" class="btn" style="background:var(--ink);color:var(--sheet);border:0;border-radius:8px;padding:8px 16px;font-weight:600;cursor:pointer">Samajh gaya</button>
+  </div>
+</dialog>
+
+<dialog id="app-share-dialog" style="border:1px solid var(--rule);border-radius:14px;padding:20px;max-width:520px;width:92%;background:var(--sheet);color:var(--ink);box-shadow:0 12px 36px rgba(0,0,0,0.3)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h3 style="margin:0;font-family:var(--display);font-size:20px">🔗 Vyom Planner App Link Bhejein</h3>
+    <button id="close-app-share-dialog" class="chip" type="button" style="font-size:16px;padding:4px 10px;cursor:pointer" aria-label="Band karein">✕</button>
+  </div>
+  <p class="lede" style="font-size:13.5px;margin:0 0 12px">
+    Ye link kisi ko bhi WhatsApp ya Telegram par bhej sakte hain. Ek click me unke mobile ya laptop me app install ho jayega!
+  </p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    <a class="btn" id="app-share-wa" target="_blank" rel="noopener noreferrer" style="background:#25D366;color:#fff;display:inline-flex;align-items:center;gap:6px">WhatsApp</a>
+    <a class="btn" id="app-share-tg" target="_blank" rel="noopener noreferrer" style="background:#0088cc;color:#fff;display:inline-flex;align-items:center;gap:6px">Telegram</a>
+    <button class="btn ghost" id="app-share-copy" type="button">📋 Copy Link</button>
+    <button class="btn ghost" id="app-share-native" type="button" hidden>📲 Share via Phone</button>
+  </div>
+  <div id="app-share-status" class="saved" style="margin-bottom:10px;font-weight:600"></div>
+  <div>
+    <label for="app-share-msg-preview" class="kd" style="display:block;margin-bottom:4px;font-weight:600">Message Preview:</label>
+    <textarea id="app-share-msg-preview" readonly style="width:100%;height:130px;font:13px/1.5 var(--mono);padding:8px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:8px;box-sizing:border-box"></textarea>
   </div>
 </dialog>
 
@@ -1424,6 +1446,87 @@ function initPWA() {
     hideInstallPrompts();
     deferredPwaPrompt = null;
   });
+
+  // App Link Share Dialog setup
+  const shareLinkBtn = document.getElementById('pwa-share-link-btn');
+  const appShareDlg = document.getElementById('app-share-dialog');
+  const appShareClose = document.getElementById('close-app-share-dialog');
+  const appShareCopy = document.getElementById('app-share-copy');
+  const appShareWa = document.getElementById('app-share-wa');
+  const appShareTg = document.getElementById('app-share-tg');
+  const appShareNative = document.getElementById('app-share-native');
+  const appShareStatus = document.getElementById('app-share-status');
+  const appSharePreview = document.getElementById('app-share-msg-preview');
+
+  const appLiveUrl = (location.protocol.startsWith('http') && !location.hostname.includes('127.0.0.1') && !location.hostname.includes('localhost'))
+    ? (location.origin + location.pathname.replace(/\/1_Planner\/.*$/, '/'))
+    : 'https://ravipatidarji-cell.github.io/vyom-class-9-planner/';
+
+  const appShareText = `📚 *Vyom Class 9 Study Planner App*\n\n` +
+    `• Har din ka study schedule & timings\n` +
+    `• Saari NCERT books PDF ek click me\n` +
+    `• Daily 20-min test papers & answers\n` +
+    `• Offline revision & rewards tracker\n\n` +
+    `👉 *Mobile / Laptop me App install karne ke liye link kholo:*\n${appLiveUrl}`;
+
+  if (appSharePreview) appSharePreview.value = appShareText;
+  if (appShareWa) appShareWa.href = 'https://wa.me/?text=' + encodeURIComponent(appShareText);
+  if (appShareTg) appShareTg.href = 'https://t.me/share/url?url=' + encodeURIComponent(appLiveUrl) + '&text=' + encodeURIComponent('📚 Vyom Class 9 Study Planner App — Roz ka schedule, NCERT books aur tests:');
+
+  if (shareLinkBtn) {
+    shareLinkBtn.onclick = () => {
+      if (appShareDlg) {
+        if (typeof appShareDlg.showModal === 'function') appShareDlg.showModal();
+        else appShareDlg.setAttribute('open', '');
+      }
+    };
+  }
+
+  if (appShareClose) {
+    appShareClose.onclick = () => { if (appShareDlg) appShareDlg.close(); };
+  }
+  if (appShareDlg) {
+    appShareDlg.addEventListener('click', e => {
+      const rect = appShareDlg.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) {
+        appShareDlg.close();
+      }
+    });
+  }
+
+  if (appShareCopy) {
+    appShareCopy.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(appShareText);
+        if (appShareStatus) {
+          appShareStatus.textContent = '✓ App link aur message copy ho gaya! WhatsApp / Telegram par paste karein.';
+          setTimeout(() => { appShareStatus.textContent = ''; }, 3500);
+        }
+      } catch (e) {
+        if (appSharePreview) {
+          appSharePreview.select();
+          document.execCommand('copy');
+          if (appShareStatus) {
+            appShareStatus.textContent = '✓ App link copy ho gaya!';
+            setTimeout(() => { appShareStatus.textContent = ''; }, 3500);
+          }
+        }
+      }
+    };
+  }
+
+  if (appShareNative && navigator.share) {
+    appShareNative.hidden = false;
+    appShareNative.onclick = async () => {
+      try {
+        await navigator.share({
+          title: 'Vyom Class 9 Study Planner App',
+          text: appShareText,
+          url: appLiveUrl
+        });
+      } catch (err) {}
+    };
+  }
 }
 
 initPWA();
