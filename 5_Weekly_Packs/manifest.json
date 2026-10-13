@@ -1,0 +1,1291 @@
+{
+  "version": "v4 · 2026-10-12 · Sanskrit coverage",
+  "start": "2026-10-12",
+  "end": "2027-03-17",
+  "weeks": [
+    {
+      "start": "2026-10-12",
+      "end": "2026-10-18",
+      "firstDay": "2026-10-12",
+      "lastDay": "2026-10-18",
+      "days": 7,
+      "tasks": 49,
+      "testIds": [
+        "D2026-10-12",
+        "D2026-10-13",
+        "D2026-10-14",
+        "D2026-10-15",
+        "D2026-10-16",
+        "D2026-10-17",
+        "D2026-10-18"
+      ],
+      "questions": 50,
+      "answers": 50,
+      "studentPages": 24,
+      "parentPages": 9,
+      "student": "../5_Weekly_Packs/01_2026-10-12_to_2026-10-18_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/01_2026-10-12_to_2026-10-18_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 49,
+          "questions": 50,
+          "answers": 0,
+          "tests": [
+            "D2026-10-12",
+            "D2026-10-13",
+            "D2026-10-14",
+            "D2026-10-15",
+            "D2026-10-16",
+            "D2026-10-17",
+            "D2026-10-18"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 24
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 50,
+          "tests": [],
+          "keys": [
+            "D2026-10-12",
+            "D2026-10-13",
+            "D2026-10-14",
+            "D2026-10-15",
+            "D2026-10-16",
+            "D2026-10-17",
+            "D2026-10-18"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 9
+        }
+      }
+    },
+    {
+      "start": "2026-10-19",
+      "end": "2026-10-25",
+      "firstDay": "2026-10-19",
+      "lastDay": "2026-10-25",
+      "days": 7,
+      "tasks": 36,
+      "testIds": [
+        "T2026-10-19",
+        "D2026-10-23",
+        "D2026-10-24",
+        "D2026-10-25"
+      ],
+      "questions": 40,
+      "answers": 40,
+      "studentPages": 21,
+      "parentPages": 9,
+      "student": "../5_Weekly_Packs/02_2026-10-19_to_2026-10-25_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/02_2026-10-19_to_2026-10-25_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 36,
+          "questions": 40,
+          "answers": 0,
+          "tests": [
+            "T2026-10-19",
+            "D2026-10-23",
+            "D2026-10-24",
+            "D2026-10-25"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 21
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 40,
+          "tests": [],
+          "keys": [
+            "T2026-10-19",
+            "D2026-10-23",
+            "D2026-10-24",
+            "D2026-10-25"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 9
+        }
+      }
+    },
+    {
+      "start": "2026-10-26",
+      "end": "2026-11-01",
+      "firstDay": "2026-10-26",
+      "lastDay": "2026-11-01",
+      "days": 7,
+      "tasks": 42,
+      "testIds": [
+        "T2026-10-26",
+        "D2026-10-28",
+        "D2026-10-29",
+        "D2026-10-30",
+        "D2026-10-31",
+        "D2026-11-01"
+      ],
+      "questions": 55,
+      "answers": 55,
+      "studentPages": 26,
+      "parentPages": 11,
+      "student": "../5_Weekly_Packs/03_2026-10-26_to_2026-11-01_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/03_2026-10-26_to_2026-11-01_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 42,
+          "questions": 55,
+          "answers": 0,
+          "tests": [
+            "T2026-10-26",
+            "D2026-10-28",
+            "D2026-10-29",
+            "D2026-10-30",
+            "D2026-10-31",
+            "D2026-11-01"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 26
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 55,
+          "tests": [],
+          "keys": [
+            "T2026-10-26",
+            "D2026-10-28",
+            "D2026-10-29",
+            "D2026-10-30",
+            "D2026-10-31",
+            "D2026-11-01"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 11
+        }
+      }
+    },
+    {
+      "start": "2026-11-02",
+      "end": "2026-11-08",
+      "firstDay": "2026-11-02",
+      "lastDay": "2026-11-08",
+      "days": 7,
+      "tasks": 38,
+      "testIds": [
+        "T2026-11-02",
+        "D2026-11-03",
+        "D2026-11-04",
+        "D2026-11-05",
+        "D2026-11-06"
+      ],
+      "questions": 51,
+      "answers": 51,
+      "studentPages": 23,
+      "parentPages": 10,
+      "student": "../5_Weekly_Packs/04_2026-11-02_to_2026-11-08_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/04_2026-11-02_to_2026-11-08_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 38,
+          "questions": 51,
+          "answers": 0,
+          "tests": [
+            "T2026-11-02",
+            "D2026-11-03",
+            "D2026-11-04",
+            "D2026-11-05",
+            "D2026-11-06"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 23
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 51,
+          "tests": [],
+          "keys": [
+            "T2026-11-02",
+            "D2026-11-03",
+            "D2026-11-04",
+            "D2026-11-05",
+            "D2026-11-06"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 10
+        }
+      }
+    },
+    {
+      "start": "2026-11-09",
+      "end": "2026-11-15",
+      "firstDay": "2026-11-09",
+      "lastDay": "2026-11-15",
+      "days": 7,
+      "tasks": 30,
+      "testIds": [
+        "D2026-11-13",
+        "D2026-11-14",
+        "D2026-11-15"
+      ],
+      "questions": 27,
+      "answers": 27,
+      "studentPages": 16,
+      "parentPages": 6,
+      "student": "../5_Weekly_Packs/05_2026-11-09_to_2026-11-15_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/05_2026-11-09_to_2026-11-15_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 30,
+          "questions": 27,
+          "answers": 0,
+          "tests": [
+            "D2026-11-13",
+            "D2026-11-14",
+            "D2026-11-15"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 16
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 27,
+          "tests": [],
+          "keys": [
+            "D2026-11-13",
+            "D2026-11-14",
+            "D2026-11-15"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 6
+        }
+      }
+    },
+    {
+      "start": "2026-11-16",
+      "end": "2026-11-22",
+      "firstDay": "2026-11-16",
+      "lastDay": "2026-11-22",
+      "days": 7,
+      "tasks": 40,
+      "testIds": [
+        "T2026-11-16",
+        "D2026-11-17",
+        "D2026-11-18",
+        "D2026-11-19",
+        "D2026-11-20",
+        "D2026-11-21",
+        "D2026-11-22"
+      ],
+      "questions": 63,
+      "answers": 63,
+      "studentPages": 27,
+      "parentPages": 12,
+      "student": "../5_Weekly_Packs/06_2026-11-16_to_2026-11-22_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/06_2026-11-16_to_2026-11-22_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 40,
+          "questions": 63,
+          "answers": 0,
+          "tests": [
+            "T2026-11-16",
+            "D2026-11-17",
+            "D2026-11-18",
+            "D2026-11-19",
+            "D2026-11-20",
+            "D2026-11-21",
+            "D2026-11-22"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 27
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 63,
+          "tests": [],
+          "keys": [
+            "T2026-11-16",
+            "D2026-11-17",
+            "D2026-11-18",
+            "D2026-11-19",
+            "D2026-11-20",
+            "D2026-11-21",
+            "D2026-11-22"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 12
+        }
+      }
+    },
+    {
+      "start": "2026-11-23",
+      "end": "2026-11-29",
+      "firstDay": "2026-11-23",
+      "lastDay": "2026-11-29",
+      "days": 7,
+      "tasks": 39,
+      "testIds": [
+        "T2026-11-23",
+        "D2026-11-24",
+        "T2026-11-25",
+        "D2026-11-26",
+        "D2026-11-27",
+        "D2026-11-28",
+        "D2026-11-29"
+      ],
+      "questions": 74,
+      "answers": 74,
+      "studentPages": 30,
+      "parentPages": 14,
+      "student": "../5_Weekly_Packs/07_2026-11-23_to_2026-11-29_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/07_2026-11-23_to_2026-11-29_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 39,
+          "questions": 74,
+          "answers": 0,
+          "tests": [
+            "T2026-11-23",
+            "D2026-11-24",
+            "T2026-11-25",
+            "D2026-11-26",
+            "D2026-11-27",
+            "D2026-11-28",
+            "D2026-11-29"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 30
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 74,
+          "tests": [],
+          "keys": [
+            "T2026-11-23",
+            "D2026-11-24",
+            "T2026-11-25",
+            "D2026-11-26",
+            "D2026-11-27",
+            "D2026-11-28",
+            "D2026-11-29"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 14
+        }
+      }
+    },
+    {
+      "start": "2026-11-30",
+      "end": "2026-12-06",
+      "firstDay": "2026-11-30",
+      "lastDay": "2026-12-06",
+      "days": 7,
+      "tasks": 40,
+      "testIds": [
+        "T2026-11-30",
+        "D2026-12-01",
+        "D2026-12-02",
+        "D2026-12-03",
+        "D2026-12-04",
+        "D2026-12-05",
+        "D2026-12-06"
+      ],
+      "questions": 61,
+      "answers": 61,
+      "studentPages": 28,
+      "parentPages": 12,
+      "student": "../5_Weekly_Packs/08_2026-11-30_to_2026-12-06_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/08_2026-11-30_to_2026-12-06_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 40,
+          "questions": 61,
+          "answers": 0,
+          "tests": [
+            "T2026-11-30",
+            "D2026-12-01",
+            "D2026-12-02",
+            "D2026-12-03",
+            "D2026-12-04",
+            "D2026-12-05",
+            "D2026-12-06"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 28
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 61,
+          "tests": [],
+          "keys": [
+            "T2026-11-30",
+            "D2026-12-01",
+            "D2026-12-02",
+            "D2026-12-03",
+            "D2026-12-04",
+            "D2026-12-05",
+            "D2026-12-06"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 12
+        }
+      }
+    },
+    {
+      "start": "2026-12-07",
+      "end": "2026-12-13",
+      "firstDay": "2026-12-07",
+      "lastDay": "2026-12-13",
+      "days": 7,
+      "tasks": 20,
+      "testIds": [
+        "T2026-12-07"
+      ],
+      "questions": 38,
+      "answers": 38,
+      "studentPages": 20,
+      "parentPages": 8,
+      "student": "../5_Weekly_Packs/09_2026-12-07_to_2026-12-13_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/09_2026-12-07_to_2026-12-13_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 20,
+          "questions": 38,
+          "answers": 0,
+          "tests": [
+            "T2026-12-07"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 20
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 38,
+          "tests": [],
+          "keys": [
+            "T2026-12-07"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 8
+        }
+      }
+    },
+    {
+      "start": "2026-12-14",
+      "end": "2026-12-20",
+      "firstDay": "2026-12-14",
+      "lastDay": "2026-12-20",
+      "days": 7,
+      "tasks": 24,
+      "testIds": [],
+      "questions": 0,
+      "answers": 0,
+      "studentPages": 10,
+      "parentPages": 2,
+      "student": "../5_Weekly_Packs/10_2026-12-14_to_2026-12-20_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/10_2026-12-14_to_2026-12-20_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 24,
+          "questions": 0,
+          "answers": 0,
+          "tests": [],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 10
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 0,
+          "tests": [],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 2
+        }
+      }
+    },
+    {
+      "start": "2026-12-21",
+      "end": "2026-12-27",
+      "firstDay": "2026-12-21",
+      "lastDay": "2026-12-27",
+      "days": 7,
+      "tasks": 35,
+      "testIds": [
+        "D2026-12-21",
+        "D2026-12-22",
+        "D2026-12-23",
+        "D2026-12-24",
+        "D2026-12-26",
+        "T2026-12-27"
+      ],
+      "questions": 55,
+      "answers": 55,
+      "studentPages": 25,
+      "parentPages": 11,
+      "student": "../5_Weekly_Packs/11_2026-12-21_to_2026-12-27_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/11_2026-12-21_to_2026-12-27_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 35,
+          "questions": 55,
+          "answers": 0,
+          "tests": [
+            "D2026-12-21",
+            "D2026-12-22",
+            "D2026-12-23",
+            "D2026-12-24",
+            "D2026-12-26",
+            "T2026-12-27"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 25
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 55,
+          "tests": [],
+          "keys": [
+            "D2026-12-21",
+            "D2026-12-22",
+            "D2026-12-23",
+            "D2026-12-24",
+            "D2026-12-26",
+            "T2026-12-27"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 11
+        }
+      }
+    },
+    {
+      "start": "2026-12-28",
+      "end": "2027-01-03",
+      "firstDay": "2026-12-28",
+      "lastDay": "2027-01-03",
+      "days": 7,
+      "tasks": 33,
+      "testIds": [
+        "D2026-12-28",
+        "D2026-12-29",
+        "D2026-12-30",
+        "T2027-01-03"
+      ],
+      "questions": 41,
+      "answers": 41,
+      "studentPages": 21,
+      "parentPages": 9,
+      "student": "../5_Weekly_Packs/12_2026-12-28_to_2027-01-03_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/12_2026-12-28_to_2027-01-03_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 33,
+          "questions": 41,
+          "answers": 0,
+          "tests": [
+            "D2026-12-28",
+            "D2026-12-29",
+            "D2026-12-30",
+            "T2027-01-03"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 21
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 41,
+          "tests": [],
+          "keys": [
+            "D2026-12-28",
+            "D2026-12-29",
+            "D2026-12-30",
+            "T2027-01-03"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 9
+        }
+      }
+    },
+    {
+      "start": "2027-01-04",
+      "end": "2027-01-10",
+      "firstDay": "2027-01-04",
+      "lastDay": "2027-01-10",
+      "days": 7,
+      "tasks": 39,
+      "testIds": [
+        "D2027-01-05",
+        "D2027-01-06",
+        "D2027-01-07",
+        "D2027-01-08",
+        "D2027-01-09",
+        "T2027-01-10"
+      ],
+      "questions": 56,
+      "answers": 56,
+      "studentPages": 25,
+      "parentPages": 10,
+      "student": "../5_Weekly_Packs/13_2027-01-04_to_2027-01-10_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/13_2027-01-04_to_2027-01-10_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 39,
+          "questions": 56,
+          "answers": 0,
+          "tests": [
+            "D2027-01-05",
+            "D2027-01-06",
+            "D2027-01-07",
+            "D2027-01-08",
+            "D2027-01-09",
+            "T2027-01-10"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 25
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 56,
+          "tests": [],
+          "keys": [
+            "D2027-01-05",
+            "D2027-01-06",
+            "D2027-01-07",
+            "D2027-01-08",
+            "D2027-01-09",
+            "T2027-01-10"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 10
+        }
+      }
+    },
+    {
+      "start": "2027-01-11",
+      "end": "2027-01-17",
+      "firstDay": "2027-01-11",
+      "lastDay": "2027-01-17",
+      "days": 7,
+      "tasks": 40,
+      "testIds": [
+        "D2027-01-11",
+        "D2027-01-12",
+        "D2027-01-13",
+        "D2027-01-14",
+        "D2027-01-15",
+        "D2027-01-16",
+        "T2027-01-17"
+      ],
+      "questions": 53,
+      "answers": 53,
+      "studentPages": 27,
+      "parentPages": 11,
+      "student": "../5_Weekly_Packs/14_2027-01-11_to_2027-01-17_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/14_2027-01-11_to_2027-01-17_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 40,
+          "questions": 53,
+          "answers": 0,
+          "tests": [
+            "D2027-01-11",
+            "D2027-01-12",
+            "D2027-01-13",
+            "D2027-01-14",
+            "D2027-01-15",
+            "D2027-01-16",
+            "T2027-01-17"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 27
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 53,
+          "tests": [],
+          "keys": [
+            "D2027-01-11",
+            "D2027-01-12",
+            "D2027-01-13",
+            "D2027-01-14",
+            "D2027-01-15",
+            "D2027-01-16",
+            "T2027-01-17"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 11
+        }
+      }
+    },
+    {
+      "start": "2027-01-18",
+      "end": "2027-01-24",
+      "firstDay": "2027-01-18",
+      "lastDay": "2027-01-24",
+      "days": 7,
+      "tasks": 38,
+      "testIds": [
+        "D2027-01-18",
+        "D2027-01-19",
+        "D2027-01-20",
+        "D2027-01-21",
+        "D2027-01-22",
+        "D2027-01-23",
+        "T2027-01-24"
+      ],
+      "questions": 75,
+      "answers": 75,
+      "studentPages": 32,
+      "parentPages": 14,
+      "student": "../5_Weekly_Packs/15_2027-01-18_to_2027-01-24_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/15_2027-01-18_to_2027-01-24_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 38,
+          "questions": 75,
+          "answers": 0,
+          "tests": [
+            "D2027-01-18",
+            "D2027-01-19",
+            "D2027-01-20",
+            "D2027-01-21",
+            "D2027-01-22",
+            "D2027-01-23",
+            "T2027-01-24"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 32
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 75,
+          "tests": [],
+          "keys": [
+            "D2027-01-18",
+            "D2027-01-19",
+            "D2027-01-20",
+            "D2027-01-21",
+            "D2027-01-22",
+            "D2027-01-23",
+            "T2027-01-24"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 14
+        }
+      }
+    },
+    {
+      "start": "2027-01-25",
+      "end": "2027-01-31",
+      "firstDay": "2027-01-25",
+      "lastDay": "2027-01-31",
+      "days": 7,
+      "tasks": 35,
+      "testIds": [
+        "D2027-01-25",
+        "D2027-01-27",
+        "D2027-01-28",
+        "D2027-01-29",
+        "D2027-01-30",
+        "T2027-01-31"
+      ],
+      "questions": 66,
+      "answers": 66,
+      "studentPages": 30,
+      "parentPages": 13,
+      "student": "../5_Weekly_Packs/16_2027-01-25_to_2027-01-31_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/16_2027-01-25_to_2027-01-31_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 35,
+          "questions": 66,
+          "answers": 0,
+          "tests": [
+            "D2027-01-25",
+            "D2027-01-27",
+            "D2027-01-28",
+            "D2027-01-29",
+            "D2027-01-30",
+            "T2027-01-31"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 30
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 66,
+          "tests": [],
+          "keys": [
+            "D2027-01-25",
+            "D2027-01-27",
+            "D2027-01-28",
+            "D2027-01-29",
+            "D2027-01-30",
+            "T2027-01-31"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 13
+        }
+      }
+    },
+    {
+      "start": "2027-02-01",
+      "end": "2027-02-07",
+      "firstDay": "2027-02-01",
+      "lastDay": "2027-02-07",
+      "days": 7,
+      "tasks": 38,
+      "testIds": [
+        "D2027-02-01",
+        "D2027-02-02",
+        "D2027-02-03",
+        "D2027-02-04",
+        "D2027-02-05",
+        "D2027-02-06",
+        "T2027-02-07"
+      ],
+      "questions": 68,
+      "answers": 68,
+      "studentPages": 31,
+      "parentPages": 14,
+      "student": "../5_Weekly_Packs/17_2027-02-01_to_2027-02-07_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/17_2027-02-01_to_2027-02-07_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 38,
+          "questions": 68,
+          "answers": 0,
+          "tests": [
+            "D2027-02-01",
+            "D2027-02-02",
+            "D2027-02-03",
+            "D2027-02-04",
+            "D2027-02-05",
+            "D2027-02-06",
+            "T2027-02-07"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 31
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 68,
+          "tests": [],
+          "keys": [
+            "D2027-02-01",
+            "D2027-02-02",
+            "D2027-02-03",
+            "D2027-02-04",
+            "D2027-02-05",
+            "D2027-02-06",
+            "T2027-02-07"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 14
+        }
+      }
+    },
+    {
+      "start": "2027-02-08",
+      "end": "2027-02-14",
+      "firstDay": "2027-02-08",
+      "lastDay": "2027-02-14",
+      "days": 7,
+      "tasks": 38,
+      "testIds": [
+        "D2027-02-08",
+        "D2027-02-09",
+        "D2027-02-10",
+        "D2027-02-11",
+        "D2027-02-12",
+        "D2027-02-13",
+        "T2027-02-14"
+      ],
+      "questions": 44,
+      "answers": 44,
+      "studentPages": 31,
+      "parentPages": 13,
+      "student": "../5_Weekly_Packs/18_2027-02-08_to_2027-02-14_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/18_2027-02-08_to_2027-02-14_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 38,
+          "questions": 44,
+          "answers": 0,
+          "tests": [
+            "D2027-02-08",
+            "D2027-02-09",
+            "D2027-02-10",
+            "D2027-02-11",
+            "D2027-02-12",
+            "D2027-02-13",
+            "T2027-02-14"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 31
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 44,
+          "tests": [],
+          "keys": [
+            "D2027-02-08",
+            "D2027-02-09",
+            "D2027-02-10",
+            "D2027-02-11",
+            "D2027-02-12",
+            "D2027-02-13",
+            "T2027-02-14"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 13
+        }
+      }
+    },
+    {
+      "start": "2027-02-15",
+      "end": "2027-02-21",
+      "firstDay": "2027-02-15",
+      "lastDay": "2027-02-21",
+      "days": 7,
+      "tasks": 26,
+      "testIds": [
+        "T2027-02-15",
+        "T2027-02-16",
+        "T2027-02-17",
+        "T2027-02-18",
+        "T2027-02-19",
+        "T2027-02-20"
+      ],
+      "questions": 182,
+      "answers": 182,
+      "studentPages": 64,
+      "parentPages": 33,
+      "student": "../5_Weekly_Packs/19_2027-02-15_to_2027-02-21_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/19_2027-02-15_to_2027-02-21_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 26,
+          "questions": 182,
+          "answers": 0,
+          "tests": [
+            "T2027-02-15",
+            "T2027-02-16",
+            "T2027-02-17",
+            "T2027-02-18",
+            "T2027-02-19",
+            "T2027-02-20"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 64
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 182,
+          "tests": [],
+          "keys": [
+            "T2027-02-15",
+            "T2027-02-16",
+            "T2027-02-17",
+            "T2027-02-18",
+            "T2027-02-19",
+            "T2027-02-20"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 33
+        }
+      }
+    },
+    {
+      "start": "2027-02-22",
+      "end": "2027-02-28",
+      "firstDay": "2027-02-22",
+      "lastDay": "2027-02-28",
+      "days": 7,
+      "tasks": 26,
+      "testIds": [
+        "T2027-02-22",
+        "T2027-02-23",
+        "T2027-02-24",
+        "T2027-02-25",
+        "T2027-02-26",
+        "T2027-02-27",
+        "T2027-02-28"
+      ],
+      "questions": 230,
+      "answers": 230,
+      "studentPages": 78,
+      "parentPages": 41,
+      "student": "../5_Weekly_Packs/20_2027-02-22_to_2027-02-28_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/20_2027-02-22_to_2027-02-28_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 26,
+          "questions": 230,
+          "answers": 0,
+          "tests": [
+            "T2027-02-22",
+            "T2027-02-23",
+            "T2027-02-24",
+            "T2027-02-25",
+            "T2027-02-26",
+            "T2027-02-27",
+            "T2027-02-28"
+          ],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 78
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 230,
+          "tests": [],
+          "keys": [
+            "T2027-02-22",
+            "T2027-02-23",
+            "T2027-02-24",
+            "T2027-02-25",
+            "T2027-02-26",
+            "T2027-02-27",
+            "T2027-02-28"
+          ],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 41
+        }
+      }
+    },
+    {
+      "start": "2027-03-01",
+      "end": "2027-03-07",
+      "firstDay": "2027-03-01",
+      "lastDay": "2027-03-07",
+      "days": 7,
+      "tasks": 28,
+      "testIds": [],
+      "questions": 0,
+      "answers": 0,
+      "studentPages": 10,
+      "parentPages": 2,
+      "student": "../5_Weekly_Packs/21_2027-03-01_to_2027-03-07_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/21_2027-03-01_to_2027-03-07_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 28,
+          "questions": 0,
+          "answers": 0,
+          "tests": [],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 10
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 0,
+          "tests": [],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 2
+        }
+      }
+    },
+    {
+      "start": "2027-03-08",
+      "end": "2027-03-14",
+      "firstDay": "2027-03-08",
+      "lastDay": "2027-03-14",
+      "days": 7,
+      "tasks": 28,
+      "testIds": [],
+      "questions": 0,
+      "answers": 0,
+      "studentPages": 10,
+      "parentPages": 2,
+      "student": "../5_Weekly_Packs/22_2027-03-08_to_2027-03-14_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/22_2027-03-08_to_2027-03-14_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 28,
+          "questions": 0,
+          "answers": 0,
+          "tests": [],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 10
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 0,
+          "tests": [],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 2
+        }
+      }
+    },
+    {
+      "start": "2027-03-15",
+      "end": "2027-03-21",
+      "firstDay": "2027-03-15",
+      "lastDay": "2027-03-17",
+      "days": 3,
+      "tasks": 12,
+      "testIds": [],
+      "questions": 0,
+      "answers": 0,
+      "studentPages": 6,
+      "parentPages": 2,
+      "student": "../5_Weekly_Packs/23_2027-03-15_to_2027-03-21_Student.pdf",
+      "parent": "../5_Weekly_Packs/Parent_Answer_Keys/23_2027-03-15_to_2027-03-21_Parent_Key.pdf",
+      "audit": {
+        "student": {
+          "tasks": 12,
+          "questions": 0,
+          "answers": 0,
+          "tests": [],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 6
+        },
+        "parent": {
+          "tasks": 0,
+          "questions": 0,
+          "answers": 0,
+          "tests": [],
+          "keys": [],
+          "oversizedBlocks": 0,
+          "horizontalOverflow": false,
+          "hindiFontLoaded": true,
+          "pages": 2
+        }
+      }
+    }
+  ]
+}

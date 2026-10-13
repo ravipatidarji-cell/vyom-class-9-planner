@@ -1,0 +1,16 @@
+{
+  "name": "vyom-weekly-print-packs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local weekly planner PDFs with student answer space and separate parent keys",
+  "scripts": {
+    "build": "node generate.cjs",
+    "verify": "node verify.cjs"
+  },
+  "dependencies": {
+    "@fontsource/baloo-2": "^5.2.8",
+    "@fontsource/mukta": "^5.2.8",
+    "pdfjs-dist": "^5.4.624",
+    "playwright-core": "^1.56.1"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-13",
+  "taskCount": 7,
+  "testId": "D2026-10-13",
+  "messageParts": 2,
+  "results": {
+    "Schedule": {
+      "filename": "2026-10-13_Schedule.pdf",
+      "pages": 2,
+      "tasks": 7,
+      "questions": 0,
+      "answers": 0,
+      "overflow": false
+    },
+    "Student_Test": {
+      "filename": "2026-10-13_Student_Test.pdf",
+      "pages": 2,
+      "tasks": 0,
+      "questions": 7,
+      "answers": 0,
+      "overflow": false
+    },
+    "Parent_Key": {
+      "filename": "2026-10-13_Parent_Key.pdf",
+      "pages": 1,
+      "tasks": 0,
+      "questions": 0,
+      "answers": 7,
+      "overflow": false
+    }
+  },
+  "sent": false
+}
