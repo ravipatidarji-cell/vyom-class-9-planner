@@ -548,8 +548,8 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
     <button id="close-cloud-sync" class="chip" type="button" aria-label="Band karein">✕</button>
   </div>
   <p class="lede" style="font-size:13.5px">Har vyakti apne alag family login se sign in kare. Is browser ka login yaad rahega; internet par progress sync hogi.</p>
-  <label for="cloud-email" class="kd" style="display:block;margin-bottom:4px;font-weight:600">Aapka family login email</label>
-  <input id="cloud-email" type="email" autocomplete="username" style="width:100%;font:15px var(--body);padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink);margin-bottom:10px">
+  <label for="cloud-login" class="kd" style="display:block;margin-bottom:4px;font-weight:600">Aapka login ID (mobile number ya purana admin email)</label>
+  <input id="cloud-login" type="text" inputmode="tel" autocomplete="username" placeholder="10-digit mobile number" style="width:100%;font:15px var(--body);padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink);margin-bottom:10px">
   <label for="cloud-password" class="kd" style="display:block;margin-bottom:4px;font-weight:600">Password</label>
   <input id="cloud-password" type="password" autocomplete="current-password" style="width:100%;font:15px var(--body);padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink)">
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
@@ -1801,7 +1801,7 @@ function initCloudControls(){
   const closeBtn=document.getElementById('close-cloud-sync');
   const signInBtn=document.getElementById('cloud-signin');
   const signOutBtn=document.getElementById('cloud-signout');
-  const emailInput=document.getElementById('cloud-email');
+  const loginInput=document.getElementById('cloud-login');
   const passwordInput=document.getElementById('cloud-password');
   if(openBtn)openBtn.onclick=()=>{
     if(dlg&&typeof dlg.showModal==='function')dlg.showModal();
@@ -1835,19 +1835,38 @@ function initCloudControls(){
       if(signOutBtn)signOutBtn.hidden=false;
       startCloudSync();
     }else{
-      cloudMessage('Apne individual family email/password se sign in karein. Har vyakti ka alag account Supabase Auth → Users mein banayein.');
+      cloudMessage('Apne registered mobile number aur password se sign in karein. Purana admin email bhi chalega.');
     }
   });
   if(signInBtn)signInBtn.onclick=async()=>{
+    const login=loginInput.value.trim();
+    const credentials={password:passwordInput.value};
+    if(login.includes('@')){
+      credentials.email=login;
+    }else{
+      const digits=login.replace(/[^\d]/g,'');
+      const phone=digits.length===10?'+91'+digits:login.startsWith('+')?login:digits.length===12&&digits.startsWith('91')?'+'+digits:'';
+      if(!/^\+[1-9]\d{7,14}$/.test(phone)){
+        cloudMessage('Sahi mobile number daalein: 10 digits, ya country code ke saath (jaise +91...).');
+        return;
+      }
+      credentials.phone=phone;
+    }
     signInBtn.disabled=true;
     cloudMessage('Signing in…');
-    const {error}=await supabaseClient.auth.signInWithPassword({
-      email:emailInput.value.trim(),password:passwordInput.value
-    });
+    let error;
+    try{
+      ({error}=await supabaseClient.auth.signInWithPassword(credentials));
+    }catch(signInError){
+      console.error('Family cloud sign-in request failed:',signInError.message||signInError);
+      cloudMessage('Sign-in request nahi ja saki. Internet check karke dobara try karein.');
+      signInBtn.disabled=false;
+      return;
+    }
     signInBtn.disabled=false;
     if(error){
       console.error('Family cloud sign-in failed:',error.message);
-      cloudMessage('Sign-in failed. Check the family email/password and Supabase setup.');
+      cloudMessage('Sign-in nahi hua. Registered mobile/email aur us account ka password check karein.');
       return;
     }
     passwordInput.value='';
