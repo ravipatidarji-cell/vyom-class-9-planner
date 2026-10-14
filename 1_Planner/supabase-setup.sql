@@ -37,9 +37,19 @@ create table if not exists public.planner_comments (
 create index if not exists planner_comments_created_at_idx
   on public.planner_comments(created_at desc);
 
+create table if not exists public.planner_login_activity (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references public.planner_family_members(user_id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists planner_login_activity_created_at_idx
+  on public.planner_login_activity(created_at desc);
+
 alter table public.planner_family_members enable row level security;
 alter table public.planner_family_private enable row level security;
 alter table public.planner_comments enable row level security;
+alter table public.planner_login_activity enable row level security;
 alter table public.planner_records enable row level security;
 
 create or replace function public.is_planner_family_member()
@@ -98,6 +108,22 @@ create policy "members can post own comments"
   to authenticated
   with check (user_id = auth.uid() and public.is_planner_family_member());
 
+drop policy if exists "members can record own sign-ins" on public.planner_login_activity;
+create policy "members can record own sign-ins"
+  on public.planner_login_activity for insert
+  to authenticated
+  with check (
+    user_id = auth.uid()
+    and public.is_planner_family_member()
+    and created_at between now() - interval '1 minute' and now() + interval '1 minute'
+  );
+
+drop policy if exists "admins can read family sign-in history" on public.planner_login_activity;
+create policy "admins can read family sign-in history"
+  on public.planner_login_activity for select
+  to authenticated
+  using (public.is_planner_family_admin());
+
 drop policy if exists "family members can read planner progress" on public.planner_records;
 create policy "family members can read planner progress"
   on public.planner_records for select
@@ -122,6 +148,8 @@ grant select on public.planner_family_members to authenticated;
 grant select on public.planner_family_private to authenticated;
 grant select, insert on public.planner_comments to authenticated;
 grant usage, select on sequence public.planner_comments_id_seq to authenticated;
+grant select, insert on public.planner_login_activity to authenticated;
+grant usage, select on sequence public.planner_login_activity_id_seq to authenticated;
 
 do $$
 begin
@@ -133,6 +161,13 @@ end $$;
 do $$
 begin
   alter publication supabase_realtime add table public.planner_comments;
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter publication supabase_realtime add table public.planner_login_activity;
 exception
   when duplicate_object then null;
 end $$;

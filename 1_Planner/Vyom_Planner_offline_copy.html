@@ -463,6 +463,7 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
     <h2 class="sec">Family Members &amp; Comments</h2>
     <p class="lede">Yeh page sirf approved family accounts mein signed-in members ke liye hai. Har member ka alag login hoga. Phone numbers sirf parent/admin ko dikhte hain.</p>
     <div class="card" id="family-status" role="status" aria-live="polite">Family details dekhne ke liye Cloud Sync mein sign in karein.</div>
+    <div class="card" id="family-audit-warning" role="status" aria-live="polite" hidden></div>
     <div class="cols" style="margin-top:14px">
       <div class="card">
         <h2>Approved family logins</h2>
@@ -472,6 +473,12 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
       <div class="card" id="family-private-card" hidden>
         <h2>Parent/admin only · phone directory</h2>
         <ul class="wl" id="family-phones"></ul>
+      </div>
+      <div class="card" id="family-login-activity-card" hidden>
+        <h2>Parent/admin only · recent sign-ins</h2>
+        <p class="lede" style="font-size:13px">Har successful sign-in ka naam, tareekh aur samay. Yeh abhi-online status ya device list nahi hai.</p>
+        <ul class="wl" id="family-login-activity"></ul>
+        <div id="family-login-activity-status" class="saved" role="status" aria-live="polite"></div>
       </div>
       <div class="card wide" style="grid-column:1/-1">
         <h2>Family comments &amp; input</h2>
@@ -604,8 +611,8 @@ const clampDay=iso=>iso<DAYS[0].d?DAYS[0].d:iso>DAYS[DAYS.length-1].d?DAYS[DAYS.
 
 // ---- state: db when available, else this device ----
 const S={days:{},chapters:{},tests:{},settings:{},mistakes:{}};
-let db=null, mode='local', supabaseClient=null, cloudChannel=null, commentsChannel=null, cloudSyncStarting=false;
-let currentAuthUser=null, currentFamilyMember=null, familyMembers=[], familyPhones=[], familyComments=[];
+let db=null, mode='local', supabaseClient=null, cloudChannel=null, commentsChannel=null, loginActivityChannel=null, cloudSyncStarting=false;
+let currentAuthUser=null, currentFamilyMember=null, familyMembers=[], familyPhones=[], familyComments=[], familyLoginActivity=[];
 function lsLoad(){try{const v=JSON.parse(localStorage.getItem('vyom-plan')||'null');if(v){Object.assign(S.days,v.days||{});Object.assign(S.chapters,v.chapters||{});Object.assign(S.tests,v.tests||{});Object.assign(S.settings,v.settings||{});Object.assign(S.mistakes,v.mistakes||{});}}catch(e){}}
 function lsSave(){try{localStorage.setItem('vyom-plan',JSON.stringify(S))}catch(e){}}
 lsLoad();
@@ -666,6 +673,14 @@ async function syncRecord(col,id){
     cloudMessage('Cloud save nahi hua. Internet check karein aur us task ko dobara edit karein.');
   }
 }
+async function refreshFamilyLoginActivity(){
+  if(!supabaseClient||currentFamilyMember?.role!=='admin')return;
+  const {data,error}=await supabaseClient.from('planner_login_activity')
+    .select('id,user_id,created_at').order('created_at',{ascending:false}).limit(100);
+  if(error)throw error;
+  familyLoginActivity=data||[];
+  renderFamily();
+}
 async function startCloudSync(){
   if(!supabaseClient||mode==='supabase'||cloudSyncStarting)return;
   cloudSyncStarting=true;
@@ -685,6 +700,12 @@ async function startCloudSync(){
         .select('user_id,phone').order('user_id');
       if(phonesError)throw phonesError;
       familyPhones=phones||[];
+      const {data:activity,error:activityError}=await supabaseClient.from('planner_login_activity')
+        .select('id,user_id,created_at').order('created_at',{ascending:false}).limit(100);
+      if(activityError)throw activityError;
+      familyLoginActivity=activity||[];
+    }else{
+      familyLoginActivity=[];
     }
     const {data,error}=await supabaseClient.from('planner_records').select('collection,record_id,payload');
     if(error)throw error;
@@ -736,7 +757,27 @@ async function startCloudSync(){
           if(state)state.textContent='Live comments connection ruk gaya. Page reload karke try karein.';
         }
       });
+    if(loginActivityChannel)await supabaseClient.removeChannel(loginActivityChannel);
+    if(member.role==='admin'){
+       loginActivityChannel=supabaseClient.channel('vyom-family-login-activity')
+         .on('postgres_changes',{event:'INSERT',schema:'public',table:'planner_login_activity'},payload=>{
+           const row=payload.new;
+           if(row&&row.id&&!familyLoginActivity.some(entry=>entry.id===row.id)){
+             familyLoginActivity.unshift(row);
+             familyLoginActivity=familyLoginActivity.slice(0,100);
+             renderFamily();
+           }
+         }).subscribe(status=>{
+           if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+             const state=document.getElementById('family-login-activity-status');
+             if(state)state.textContent='Live sign-in updates ruk gaye; page reload karke history dekhein.';
+           }
+         });
+    }else{
+       loginActivityChannel=null;
+    }
     setSaved();
+    if(member.role==='admin')await refreshFamilyLoginActivity();
     renderFamily();
     const signInDialog=document.getElementById('cloud-sync-dialog');
     if(signInDialog&&signInDialog.open)signInDialog.close();
@@ -744,13 +785,16 @@ async function startCloudSync(){
   }catch(error){
     if(cloudChannel&&supabaseClient)supabaseClient.removeChannel(cloudChannel);
     if(commentsChannel&&supabaseClient)supabaseClient.removeChannel(commentsChannel);
+    if(loginActivityChannel&&supabaseClient)supabaseClient.removeChannel(loginActivityChannel);
     cloudChannel=null;
     commentsChannel=null;
+    loginActivityChannel=null;
     mode='local';
     currentFamilyMember=null;
     familyMembers=[];
     familyPhones=[];
     familyComments=[];
+    familyLoginActivity=[];
     console.error('Progress cloud sync failed:',error.message||error);
     cloudMessage(error.message==='FAMILY_ACCOUNT_NOT_APPROVED'
       ?'This login approved family member list mein nahi hai. Parent/admin se access add karwayein.'
@@ -764,14 +808,17 @@ async function startCloudSync(){
 function stopCloudSync(){
   if(cloudChannel&&supabaseClient)supabaseClient.removeChannel(cloudChannel);
   if(commentsChannel&&supabaseClient)supabaseClient.removeChannel(commentsChannel);
+  if(loginActivityChannel&&supabaseClient)supabaseClient.removeChannel(loginActivityChannel);
   cloudChannel=null;
   commentsChannel=null;
+  loginActivityChannel=null;
   mode='local';
   currentAuthUser=null;
   currentFamilyMember=null;
   familyMembers=[];
   familyPhones=[];
   familyComments=[];
+  familyLoginActivity=[];
   lsSave();
   setSaved();
   renderFamily();
@@ -781,6 +828,9 @@ function renderFamily(){
   const membersEl=document.getElementById('family-members');
   const phonesCard=document.getElementById('family-private-card');
   const phonesEl=document.getElementById('family-phones');
+  const activityCard=document.getElementById('family-login-activity-card');
+  const activityEl=document.getElementById('family-login-activity');
+  const activityStatus=document.getElementById('family-login-activity-status');
   const commentsEl=document.getElementById('family-comments');
   const form=document.getElementById('family-comment-form');
   if(!status)return;
@@ -788,6 +838,9 @@ function renderFamily(){
     status.textContent='Family page locked hai. Upar Cloud Sync par sign in karein; approved account zaroori hai.';
     if(membersEl)membersEl.innerHTML='';
     if(phonesCard)phonesCard.hidden=true;
+    if(activityCard)activityCard.hidden=true;
+    if(activityEl)activityEl.innerHTML='';
+    if(activityStatus)activityStatus.textContent='';
     if(commentsEl)commentsEl.innerHTML='';
     if(form)form.hidden=true;
     return;
@@ -804,12 +857,21 @@ function renderFamily(){
     }).join('')||'<li>Abhi koi approved member nahi.</li>';
   }
   if(phonesCard)phonesCard.hidden=currentFamilyMember.role!=='admin';
+  if(activityCard)activityCard.hidden=currentFamilyMember.role!=='admin';
   if(phonesEl&&currentFamilyMember.role==='admin'){
     const memberById=Object.fromEntries(familyMembers.map(member=>[member.user_id,member]));
     phonesEl.innerHTML=familyPhones.map(phone=>{
       const name=memberById[phone.user_id]?.display_name||'Name not set';
       return `<li><b>${esc(name)}</b> — ${esc(phone.phone)}</li>`;
     }).join('')||'<li>Phone numbers admin SQL setup se add karein.</li>';
+  }
+  if(activityEl&&currentFamilyMember.role==='admin'){
+    const memberById=Object.fromEntries(familyMembers.map(member=>[member.user_id,member]));
+    activityEl.innerHTML=familyLoginActivity.map(activity=>{
+      const name=memberById[activity.user_id]?.display_name||'Family member';
+      const when=activity.created_at?new Date(activity.created_at).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'';
+      return `<li><b>${esc(name)}</b> — ${esc(when)}</li>`;
+    }).join('')||'<li>Abhi koi recorded sign-in nahi.</li>';
   }
   if(commentsEl){
     const memberById=Object.fromEntries(familyMembers.map(member=>[member.user_id,member]));
@@ -1854,9 +1916,9 @@ function initCloudControls(){
     }
     signInBtn.disabled=true;
     cloudMessage('Signing in…');
-    let error;
+    let data,error;
     try{
-      ({error}=await supabaseClient.auth.signInWithPassword(credentials));
+      ({data,error}=await supabaseClient.auth.signInWithPassword(credentials));
     }catch(signInError){
       console.error('Family cloud sign-in request failed:',signInError.message||signInError);
       cloudMessage('Sign-in request nahi ja saki. Internet check karke dobara try karein.');
@@ -1870,6 +1932,38 @@ function initCloudControls(){
       return;
     }
     passwordInput.value='';
+    try{
+      const {error:activityError}=await supabaseClient.from('planner_login_activity')
+        .insert({user_id:data.user.id});
+      if(activityError)throw activityError;
+      const auditWarning=document.getElementById('family-audit-warning');
+      if(auditWarning){auditWarning.hidden=true;auditWarning.textContent=''}
+    }catch(activityError){
+      console.error('Family login activity could not be recorded:',activityError.message||activityError);
+      const state=document.getElementById('family-login-activity-status');
+      if(state)state.textContent='Sign-in ho gaya, lekin history save nahi hui. Parent latest setup SQL dobara run karein.';
+      const auditWarning=document.getElementById('family-audit-warning');
+      if(auditWarning){
+        auditWarning.hidden=false;
+        auditWarning.textContent='Login ho gaya, lekin admin ke liye sign-in record save nahi hua. Parent latest setup SQL dobara run karein.';
+      }
+      cloudMessage('Sign-in ho gaya, lekin login history save nahi hui. Parent se setup SQL update karwayein.');
+      return;
+    }
+    if(currentFamilyMember?.role==='admin'){
+      try{
+        await refreshFamilyLoginActivity();
+      }catch(refreshError){
+        console.error('Family login activity could not be refreshed:',refreshError.message||refreshError);
+        const state=document.getElementById('family-login-activity-status');
+        if(state)state.textContent='Sign-in record save hua, par history refresh nahi ho saki. Page reload karke try karein.';
+        const auditWarning=document.getElementById('family-audit-warning');
+        if(auditWarning){
+          auditWarning.hidden=false;
+          auditWarning.textContent='Sign-in record save hua, par admin history refresh nahi hui. Page reload karke try karein.';
+        }
+      }
+    }
     cloudMessage('Signed in. Loading shared progress…');
   };
   if(signOutBtn)signOutBtn.onclick=async()=>{
