@@ -248,6 +248,7 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
     <button role="tab" data-v="rewards" aria-selected="false">Rewards</button>
     <button role="tab" data-v="parent" aria-selected="false">Parent</button>
     <button role="tab" data-v="routine" aria-selected="false">Routine & Rules</button>
+    <button role="tab" data-v="family" aria-selected="false">Family & Comments 🔒</button>
   </nav>
 
   <section class="view" id="v-dash">
@@ -457,6 +458,33 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
       <div class="card"><h2>Plan version</h2><div id="pver" style="font-size:14px"></div></div>
     </div>
   </section>
+
+  <section class="view" id="v-family" hidden>
+    <h2 class="sec">Family Members &amp; Comments</h2>
+    <p class="lede">Yeh page sirf approved family accounts mein signed-in members ke liye hai. Har member ka alag login hoga. Phone numbers sirf parent/admin ko dikhte hain.</p>
+    <div class="card" id="family-status" role="status" aria-live="polite">Family details dekhne ke liye Cloud Sync mein sign in karein.</div>
+    <div class="cols" style="margin-top:14px">
+      <div class="card">
+        <h2>Approved family logins</h2>
+        <p class="lede" style="font-size:13px">Yahan approved members ke naam aur role dikhte hain; yeh active/online status nahi hai.</p>
+        <ul class="wl" id="family-members"></ul>
+      </div>
+      <div class="card" id="family-private-card" hidden>
+        <h2>Parent/admin only · phone directory</h2>
+        <ul class="wl" id="family-phones"></ul>
+      </div>
+      <div class="card wide" style="grid-column:1/-1">
+        <h2>Family comments &amp; input</h2>
+        <form id="family-comment-form" style="display:grid;gap:8px">
+          <label for="family-comment-input" class="kd">Apna comment / suggestion likhein</label>
+          <textarea id="family-comment-input" maxlength="2000" rows="4" required placeholder="Yahan apna input likhein…" style="width:100%;font:15px var(--body);padding:10px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink);resize:vertical"></textarea>
+          <button class="btn" type="submit" style="justify-self:start;background:var(--accent);color:#fff">Comment bhejein</button>
+        </form>
+        <div id="family-comment-status" class="saved" role="status" aria-live="polite"></div>
+        <div id="family-comments" style="display:grid;gap:8px;margin-top:12px"></div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <dialog id="share-dialog">
@@ -519,8 +547,8 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
     <h3 style="margin:0;font-family:var(--display);font-size:20px">☁️ Family Progress Sync</h3>
     <button id="close-cloud-sync" class="chip" type="button" aria-label="Band karein">✕</button>
   </div>
-  <p class="lede" style="font-size:13.5px">Sign in with the family account to see and update shared progress on this device. Internet is needed to sync; this device keeps a local copy too.</p>
-  <label for="cloud-email" class="kd" style="display:block;margin-bottom:4px;font-weight:600">Family account email</label>
+  <p class="lede" style="font-size:13.5px">Har vyakti apne alag family login se sign in kare. Is browser ka login yaad rahega; internet par progress sync hogi.</p>
+  <label for="cloud-email" class="kd" style="display:block;margin-bottom:4px;font-weight:600">Aapka family login email</label>
   <input id="cloud-email" type="email" autocomplete="username" style="width:100%;font:15px var(--body);padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink);margin-bottom:10px">
   <label for="cloud-password" class="kd" style="display:block;margin-bottom:4px;font-weight:600">Password</label>
   <input id="cloud-password" type="password" autocomplete="current-password" style="width:100%;font:15px var(--body);padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink)">
@@ -576,7 +604,8 @@ const clampDay=iso=>iso<DAYS[0].d?DAYS[0].d:iso>DAYS[DAYS.length-1].d?DAYS[DAYS.
 
 // ---- state: db when available, else this device ----
 const S={days:{},chapters:{},tests:{},settings:{},mistakes:{}};
-let db=null, mode='local', supabaseClient=null, cloudChannel=null, cloudSyncStarting=false;
+let db=null, mode='local', supabaseClient=null, cloudChannel=null, commentsChannel=null, cloudSyncStarting=false;
+let currentAuthUser=null, currentFamilyMember=null, familyMembers=[], familyPhones=[], familyComments=[];
 function lsLoad(){try{const v=JSON.parse(localStorage.getItem('vyom-plan')||'null');if(v){Object.assign(S.days,v.days||{});Object.assign(S.chapters,v.chapters||{});Object.assign(S.tests,v.tests||{});Object.assign(S.settings,v.settings||{});Object.assign(S.mistakes,v.mistakes||{});}}catch(e){}}
 function lsSave(){try{localStorage.setItem('vyom-plan',JSON.stringify(S))}catch(e){}}
 lsLoad();
@@ -641,6 +670,22 @@ async function startCloudSync(){
   if(!supabaseClient||mode==='supabase'||cloudSyncStarting)return;
   cloudSyncStarting=true;
   try{
+    const {data:member,error:memberError}=await supabaseClient.from('planner_family_members')
+      .select('user_id,display_name,role').eq('user_id',currentAuthUser&&currentAuthUser.id).maybeSingle();
+    if(memberError)throw memberError;
+    if(!member)throw new Error('FAMILY_ACCOUNT_NOT_APPROVED');
+    currentFamilyMember=member;
+    const {data:members,error:membersError}=await supabaseClient.from('planner_family_members')
+      .select('user_id,display_name,role').order('display_name');
+    if(membersError)throw membersError;
+    familyMembers=members||[];
+    familyPhones=[];
+    if(member.role==='admin'){
+      const {data:phones,error:phonesError}=await supabaseClient.from('planner_family_private')
+        .select('user_id,phone').order('user_id');
+      if(phonesError)throw phonesError;
+      familyPhones=phones||[];
+    }
     const {data,error}=await supabaseClient.from('planner_records').select('collection,record_id,payload');
     if(error)throw error;
     const remote=new Set();
@@ -657,6 +702,7 @@ async function startCloudSync(){
     }
     lsSave();
     if(cloudChannel)await supabaseClient.removeChannel(cloudChannel);
+    if(commentsChannel)await supabaseClient.removeChannel(commentsChannel);
     cloudChannel=supabaseClient.channel('vyom-family-progress')
       .on('postgres_changes',{event:'*',schema:'public',table:'planner_records'},payload=>{
         if(payload.eventType==='DELETE'){
@@ -672,23 +718,137 @@ async function startCloudSync(){
         if(status==='SUBSCRIBED')cloudMessage('Connected — is account ke sab devices par changes live sync honge.');
         else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')cloudMessage('Live connection ruk gaya. Internet check karein; reconnect ki koshish jaari hai.');
       });
+    const {data:comments,error:commentsError}=await supabaseClient.from('planner_comments')
+      .select('id,user_id,body,created_at').order('created_at',{ascending:false}).limit(200);
+    if(commentsError)throw commentsError;
+    familyComments=comments||[];
+    commentsChannel=supabaseClient.channel('vyom-family-comments')
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'planner_comments'},payload=>{
+        const row=payload.new;
+        if(row&&row.id&&!familyComments.some(comment=>comment.id===row.id)){
+          familyComments.unshift(row);
+          familyComments=familyComments.slice(0,200);
+          renderFamily();
+        }
+      }).subscribe(status=>{
+        if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+          const state=document.getElementById('family-comment-status');
+          if(state)state.textContent='Live comments connection ruk gaya. Page reload karke try karein.';
+        }
+      });
     setSaved();
+    renderFamily();
+    const signInDialog=document.getElementById('cloud-sync-dialog');
+    if(signInDialog&&signInDialog.open)signInDialog.close();
     renderAll(true);
   }catch(error){
+    if(cloudChannel&&supabaseClient)supabaseClient.removeChannel(cloudChannel);
+    if(commentsChannel&&supabaseClient)supabaseClient.removeChannel(commentsChannel);
+    cloudChannel=null;
+    commentsChannel=null;
     mode='local';
-    console.error('Progress cloud sync failed:',error.message);
-    cloudMessage('Cloud sync setup/connection error. SQL setup aur internet check karein.');
+    currentFamilyMember=null;
+    familyMembers=[];
+    familyPhones=[];
+    familyComments=[];
+    console.error('Progress cloud sync failed:',error.message||error);
+    cloudMessage(error.message==='FAMILY_ACCOUNT_NOT_APPROVED'
+      ?'This login approved family member list mein nahi hai. Parent/admin se access add karwayein.'
+      :'Cloud sync setup/connection error. Latest setup SQL dobara run karke internet check karein.');
     setSaved();
+    renderFamily();
   }finally{
     cloudSyncStarting=false;
   }
 }
 function stopCloudSync(){
   if(cloudChannel&&supabaseClient)supabaseClient.removeChannel(cloudChannel);
+  if(commentsChannel&&supabaseClient)supabaseClient.removeChannel(commentsChannel);
   cloudChannel=null;
+  commentsChannel=null;
   mode='local';
+  currentAuthUser=null;
+  currentFamilyMember=null;
+  familyMembers=[];
+  familyPhones=[];
+  familyComments=[];
   lsSave();
   setSaved();
+  renderFamily();
+}
+function renderFamily(){
+  const status=document.getElementById('family-status');
+  const membersEl=document.getElementById('family-members');
+  const phonesCard=document.getElementById('family-private-card');
+  const phonesEl=document.getElementById('family-phones');
+  const commentsEl=document.getElementById('family-comments');
+  const form=document.getElementById('family-comment-form');
+  if(!status)return;
+  if(mode!=='supabase'||!currentFamilyMember){
+    status.textContent='Family page locked hai. Upar Cloud Sync par sign in karein; approved account zaroori hai.';
+    if(membersEl)membersEl.innerHTML='';
+    if(phonesCard)phonesCard.hidden=true;
+    if(commentsEl)commentsEl.innerHTML='';
+    if(form)form.hidden=true;
+    return;
+  }
+  if(form)form.hidden=false;
+  const ownName=currentFamilyMember.display_name||'Family member';
+  status.textContent=`Signed in as ${ownName} (${currentFamilyMember.role==='admin'?'Parent/admin':'Family member'}). Login is device par yaad rahega.`;
+  if(membersEl){
+    membersEl.innerHTML=familyMembers.map(member=>{
+      const name=member.display_name||'Name not set';
+      const role=member.role==='admin'?'Parent/admin':'Member';
+      const own=member.user_id===currentFamilyMember.user_id?' · Aap':'';
+      return `<li><b>${esc(name)}</b> — ${esc(role)}${own}</li>`;
+    }).join('')||'<li>Abhi koi approved member nahi.</li>';
+  }
+  if(phonesCard)phonesCard.hidden=currentFamilyMember.role!=='admin';
+  if(phonesEl&&currentFamilyMember.role==='admin'){
+    const memberById=Object.fromEntries(familyMembers.map(member=>[member.user_id,member]));
+    phonesEl.innerHTML=familyPhones.map(phone=>{
+      const name=memberById[phone.user_id]?.display_name||'Name not set';
+      return `<li><b>${esc(name)}</b> — ${esc(phone.phone)}</li>`;
+    }).join('')||'<li>Phone numbers admin SQL setup se add karein.</li>';
+  }
+  if(commentsEl){
+    const memberById=Object.fromEntries(familyMembers.map(member=>[member.user_id,member]));
+    commentsEl.innerHTML=familyComments.map(comment=>{
+      const author=memberById[comment.user_id]?.display_name||'Family member';
+      const when=comment.created_at?new Date(comment.created_at).toLocaleString('en-IN'):'';
+      return `<article class="card" style="padding:10px 12px"><b>${esc(author)}</b><small style="color:var(--muted);margin-left:8px">${esc(when)}</small><div style="white-space:pre-wrap;overflow-wrap:anywhere;margin-top:5px">${esc(comment.body)}</div></article>`;
+    }).join('')||'<p class="lede">Abhi koi comment nahi. Aap pehla input bhej sakte hain.</p>';
+  }
+}
+function initFamilyComments(){
+  const form=document.getElementById('family-comment-form');
+  const input=document.getElementById('family-comment-input');
+  const status=document.getElementById('family-comment-status');
+  if(form)form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    const body=input.value.trim();
+    if(!body)return;
+    if(mode!=='supabase'||!currentFamilyMember||!supabaseClient){
+      if(status)status.textContent='Comment bhejne ke liye approved family account se sign in karein.';
+      return;
+    }
+    const button=form.querySelector('button[type="submit"]');
+    if(button)button.disabled=true;
+    if(status)status.textContent='Comment bhej rahe hain…';
+    try{
+      const {error}=await supabaseClient.from('planner_comments').insert({
+        user_id:currentFamilyMember.user_id,body
+      });
+      if(error)throw error;
+      input.value='';
+      if(status)status.textContent='Comment family ke saath share ho gaya.';
+    }catch(error){
+      console.error('Could not post family comment:',error.message||error);
+      if(status)status.textContent='Comment save nahi hua. Internet aur family access check karke retry karein.';
+    }finally{
+      if(button)button.disabled=false;
+    }
+  });
 }
 
 // ---- chapter book & web learning resources ----
@@ -1203,7 +1363,7 @@ document.getElementById('v-parent').addEventListener('change',e=>{const ds=e.tar
 
 // ---- tabs ----
 function showTab(v){document.querySelectorAll('nav.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v));document.querySelectorAll('section.view').forEach(s=>s.hidden=s.id!=='v-'+v);
-  if(v==='week')renderWeek();if(v==='dash')renderDash();if(v==='rewards')renderRewards();if(v==='chapters')renderChapters();if(v==='tests')renderTests();if(v==='mistakes')renderMistakes();if(v==='parent')renderParent();}
+  if(v==='week')renderWeek();if(v==='dash')renderDash();if(v==='rewards')renderRewards();if(v==='chapters')renderChapters();if(v==='tests')renderTests();if(v==='mistakes')renderMistakes();if(v==='parent')renderParent();if(v==='family')renderFamily();}
 document.querySelector('nav.tabs').onclick=e=>{const b=e.target.closest('button');if(b)showTab(b.dataset.v)};
 const h=(location.hash||'').slice(1); if(['dash','today','week','chapters','tests','mistakes','rewards','parent','routine'].includes(h)) showTab(h);
 
@@ -1657,6 +1817,7 @@ function initCloudControls(){
   supabaseClient=window.supabase.createClient(config.url,config.anonKey);
   supabaseClient.auth.onAuthStateChange((event,session)=>{
     if(session){
+      currentAuthUser=session.user;
       if(signOutBtn)signOutBtn.hidden=false;
       startCloudSync();
     }else if(event==='SIGNED_OUT'){
@@ -1670,10 +1831,11 @@ function initCloudControls(){
       console.error('Could not check family cloud session:',error.message);
       cloudMessage('Could not check sign-in. Please retry.');
     }else if(data.session){
+      currentAuthUser=data.session.user;
       if(signOutBtn)signOutBtn.hidden=false;
       startCloudSync();
     }else{
-      cloudMessage('Sign in with the family account. If needed, create it once in Supabase Dashboard → Authentication → Users.');
+      cloudMessage('Apne individual family email/password se sign in karein. Har vyakti ka alag account Supabase Auth → Users mein banayein.');
     }
   });
   if(signInBtn)signInBtn.onclick=async()=>{
@@ -1704,6 +1866,8 @@ function initCloudControls(){
 
 initPWA();
 initCloudControls();
+initFamilyComments();
 renderAll();
+renderFamily();
 </script>
 </html>

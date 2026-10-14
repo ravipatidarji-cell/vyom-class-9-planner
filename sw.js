@@ -1,5 +1,5 @@
 // Service Worker for Vyom Class 9 Planner PWA
-const CACHE_NAME = 'vyom-planner-v3';
+const CACHE_NAME = 'vyom-planner-v4';
 
 const STATIC_ASSETS = [
   './',
