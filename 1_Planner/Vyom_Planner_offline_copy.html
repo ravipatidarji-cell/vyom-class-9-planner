@@ -496,7 +496,11 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
         <h2>Members, login history aur received feedback</h2>
         <button class="chip" type="button" id="refresh-users-admin">Abhi refresh karo</button>
         <p class="saved" id="users-admin-status" role="status" aria-live="polite"></p>
-        <h3>Approved users</h3><ul class="wl" id="users-admin-roster"></ul>
+        <h3>Approved account members</h3>
+        <p class="kd">Sab approved accounts, chahe abhi login kiya ho ya nahi. Recent login latest 100 sign-in records se hai; password yahan save/display nahi hota.</p>
+        <button class="chip" type="button" id="revoke-selected-members">Selected members ka access band karo</button>
+        <p class="saved" id="revoke-members-status" role="status" aria-live="polite"></p>
+        <div class="tablewrap"><table><thead><tr><th>Select</th><th>Naam</th><th>Mobile / link bhejo</th><th>Login ID</th><th>Role / access</th><th>Account ID</th><th>Recent recorded login · IST</th></tr></thead><tbody id="users-admin-roster"></tbody></table></div>
         <h3>Recent logins · latest 100 · IST</h3><ul class="wl" id="users-admin-logins"></ul>
         <h3>Received OK / NOT OK comments · latest 100 · IST</h3><ul class="wl" id="users-admin-comments"></ul>
       </div>
@@ -737,7 +741,7 @@ async function refreshParentLoginActivity(){
   const adminId=currentAuthUser?.id;
   const [activity,members]=await Promise.all([
     supabaseClient.from('planner_login_activity').select('id,user_id,created_at').order('created_at',{ascending:false}).limit(100),
-    supabaseClient.from('planner_family_members').select('user_id,display_name,role').order('display_name')
+    supabaseClient.from('planner_family_members').select('user_id,display_name,role,active').order('display_name')
   ]);
   if(activity.error)throw activity.error;
   if(members.error)throw members.error;
@@ -774,13 +778,13 @@ async function startCloudSync(){
   cloudSyncStarting=true;
   try{
     const {data:member,error:memberError}=await supabaseClient.from('planner_family_members')
-      .select('user_id,display_name,role').eq('user_id',currentAuthUser&&currentAuthUser.id).maybeSingle();
+      .select('user_id,display_name,role,active').eq('user_id',currentAuthUser&&currentAuthUser.id).maybeSingle();
     if(memberError)throw memberError;
-    if(!member)throw new Error('FAMILY_ACCOUNT_NOT_APPROVED');
+    if(!member||member.active!==true)throw new Error('FAMILY_ACCOUNT_NOT_APPROVED');
     currentFamilyMember=member;
     if(member.role==='admin'){
       const {data:members,error:membersError}=await supabaseClient.from('planner_family_members')
-        .select('user_id,display_name,role').order('display_name');
+        .select('user_id,display_name,role,active').order('display_name');
       if(membersError)throw membersError;
       loginActivityMembers=members||[];
       const {data:activity,error:activityError}=await supabaseClient.from('planner_login_activity')
@@ -932,7 +936,7 @@ function renderUserAccess(){
   document.getElementById('member-feedback-name').textContent=approved?'Bhejne wala: '+currentFamilyMember.display_name+' · Sirf Admin aapka message padhega.':'';
   if(!admin){
     adminPrivateMembers=[];adminFeedback=[];
-    for(const id of ['users-admin-roster','users-admin-logins','users-admin-comments','users-admin-status','create-member-status'])document.getElementById(id).textContent='';
+    for(const id of ['users-admin-roster','users-admin-logins','users-admin-comments','users-admin-status','create-member-status','revoke-members-status'])document.getElementById(id).textContent='';
     clearMemberInvite();
     document.getElementById('create-member-form').reset();
     if(!document.getElementById('v-users').hidden)showTab('dash');
@@ -944,6 +948,12 @@ function renderUserAccess(){
   }
 }
 function adminTime(value){return new Date(value).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'medium'})+' IST'}
+function memberWhatsAppUrl(phone,name,login){
+  const digits=phone.replace(/\D/g,'');
+  if(!/^91[6-9]\d{9}$/.test(digits))return '';
+  const link=location.protocol==='https:'?new URL('index.html',location.href).href:'https://ravipatidarji-cell.github.io/vyom-class-9-planner/1_Planner/';
+  return 'https://wa.me/'+digits+'?text='+encodeURIComponent(`Vyom Planner\n${link}\nNaam: ${name}\nLogin ID: ${login}\nCloud Sync mein apne password se login karein. Password alag privately milega.`);
+}
 function renderAdminUsers(){
   renderUserAccess();
   if(mode!=='supabase'||currentFamilyMember?.role!=='admin')return;
@@ -954,8 +964,10 @@ function renderAdminUsers(){
     const prefix=(m.display_name||'USER').normalize('NFKD').replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(0,24)||'USER';
     const phone=phones[m.user_id];
     const login=phone?prefix+phone.replace(/\D/g,'').slice(-10):'Existing login (mobile not recorded)';
-    return `<li><b>${esc(m.display_name||'Member')}</b> · ${esc(m.role)}<br>Login ID: ${esc(login)}${phone?' · Mobile: '+esc(phone):''}<br><small style="overflow-wrap:anywhere">Account ID: ${esc(m.user_id)}</small><br>${last?'Latest recorded login: '+esc(adminTime(last.created_at)):'Latest 100 records mein login nahi mila.'}</li>`;
-  }).join('')||'<li>Koi member nahi mila.</li>';
+    const active=m.active===true,selectable=active&&m.role==='member'&&m.user_id!==currentAuthUser?.id;
+    const whatsapp=active&&m.role==='member'&&phone?memberWhatsAppUrl(phone,m.display_name||'Member',login):'';
+    return `<tr><td>${selectable?`<input type="checkbox" data-revoke-member="${esc(m.user_id)}" aria-label="${esc((m.display_name||'Member')+' ka access band karein')}">`:m.role==='admin'?'Protected':'Band'}</td><td><b>${esc(m.display_name||'Member')}</b></td><td>${esc(phone||'Not recorded')}${whatsapp?`<br><a class="chip" target="_blank" rel="noopener noreferrer" href="${esc(whatsapp)}">WhatsApp link bhejo</a>`:''}</td><td style="overflow-wrap:anywhere">${esc(login)}</td><td>${m.role==='admin'?'Admin':'Member'} · ${active?'Active':'Access band'}</td><td style="overflow-wrap:anywhere"><small>${esc(m.user_id)}</small></td><td>${last?esc(adminTime(last.created_at)):'Latest 100 records mein login nahi mila.'}</td></tr>`;
+  }).join('')||'<tr><td colspan="7">Koi member nahi mila.</td></tr>';
   document.getElementById('users-admin-logins').innerHTML=document.getElementById('parent-login-activity').innerHTML;
   document.getElementById('users-admin-comments').innerHTML=adminFeedback.map(row=>`<li><b>${esc(names[row.user_id]?.display_name||'Unlisted member')}</b> · <strong>${row.verdict==='ok'?'OK':row.verdict==='not_ok'?'NOT OK':'Legacy comment'}</strong><br><small style="overflow-wrap:anywhere">Account ID: ${esc(row.user_id)} · ${esc(adminTime(row.created_at))}</small><div style="white-space:pre-wrap">${esc(row.body)}</div></li>`).join('')||'<li>Abhi feedback nahi aaya.</li>';
 }
@@ -982,6 +994,27 @@ async function refreshAdminUsers(){
   }finally{adminUsersBusy=false;document.getElementById('refresh-users-admin').disabled=false}
 }
 document.getElementById('refresh-users-admin').onclick=refreshAdminUsers;
+let revokingMembers=false;
+document.getElementById('revoke-selected-members').onclick=async()=>{
+  if(revokingMembers||mode!=='supabase'||currentFamilyMember?.role!=='admin')return;
+  const ids=[...document.querySelectorAll('#users-admin-roster [data-revoke-member]:checked')].map(el=>el.dataset.revokeMember);
+  const status=document.getElementById('revoke-members-status');
+  if(!ids.length){status.textContent='Pehle member ke saamne checkbox select karein.';return}
+  if(!window.confirm(`${ids.length} member(s) ka app access band karna hai? Login/comment history safe rahegi. Pehle se downloaded/offline data remotely nahi hatega.`))return;
+  const adminId=currentAuthUser?.id;
+  revokingMembers=true;document.getElementById('revoke-selected-members').disabled=true;
+  try{
+    const {data,error}=await supabaseClient.rpc('revoke_planner_members',{member_ids:ids});
+    if(error)throw error;
+    if(!Number.isInteger(data))throw new Error('Server se access-change count nahi mila.');
+    if(currentAuthUser?.id!==adminId||currentFamilyMember?.role!=='admin')return;
+    status.textContent=`${data} member(s) ka server access band. History/comments safe hain.`;
+    await refreshAdminUsers();
+  }catch(error){
+    console.error('Member access revoke failed:',error.message||error);
+    if(currentAuthUser?.id===adminId&&currentFamilyMember?.role==='admin')status.textContent='Access change confirm nahi hua: '+(error.message||'Unknown error')+'. List refresh karke status check karein; latest SQL setup zaroori hai.';
+  }finally{revokingMembers=false;document.getElementById('revoke-selected-members').disabled=false}
+};
 document.getElementById('member-invite-clear').onclick=clearMemberInvite;
 document.getElementById('member-invite-copy').onclick=async()=>{
   try{await navigator.clipboard.writeText(document.getElementById('member-invite-text').value);document.getElementById('create-member-status').textContent='Message copied. Recipient ko privately bhejein.'}

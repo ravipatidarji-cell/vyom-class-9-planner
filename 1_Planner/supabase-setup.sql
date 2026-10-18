@@ -15,6 +15,7 @@ create table if not exists public.planner_family_members (
 
 alter table public.planner_family_members add column if not exists display_name text;
 alter table public.planner_family_members add column if not exists role text not null default 'member';
+alter table public.planner_family_members add column if not exists active boolean not null default true;
 
 alter table public.planner_family_members
   drop constraint if exists planner_family_members_role_check;
@@ -66,7 +67,7 @@ set search_path = public
 as $$
   select exists (
     select 1 from public.planner_family_members
-    where user_id = auth.uid()
+    where user_id = auth.uid() and active
   );
 $$;
 
@@ -79,7 +80,7 @@ set search_path = public
 as $$
   select exists (
     select 1 from public.planner_family_members
-    where user_id = auth.uid() and role = 'admin'
+    where user_id = auth.uid() and role = 'admin' and active
   );
 $$;
 
@@ -87,6 +88,39 @@ revoke all on function public.is_planner_family_member() from public;
 revoke all on function public.is_planner_family_admin() from public;
 grant execute on function public.is_planner_family_member() to authenticated;
 grant execute on function public.is_planner_family_admin() to authenticated;
+
+create or replace function public.revoke_planner_members(member_ids uuid[])
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare changed integer;
+begin
+  if not public.is_planner_family_admin() then
+    raise exception 'Only active Admin can revoke member access';
+  end if;
+  if member_ids is null or cardinality(member_ids) = 0 or cardinality(member_ids) > 100 then
+    raise exception 'Select between 1 and 100 members';
+  end if;
+  perform 1 from public.planner_family_members
+    where user_id = any(member_ids) order by user_id for update;
+  if exists (select 1 from public.planner_family_members
+    where user_id = any(member_ids) and (role = 'admin' or user_id = auth.uid())) then
+    raise exception 'Admin accounts cannot be revoked here';
+  end if;
+  if (select count(distinct id) from unnest(member_ids) as ids(id)) <>
+     (select count(*) from public.planner_family_members where user_id = any(member_ids)) then
+    raise exception 'One or more selected members no longer exist';
+  end if;
+  update public.planner_family_members set active = false
+    where user_id = any(member_ids) and role = 'member' and active;
+  get diagnostics changed = row_count;
+  return changed;
+end;
+$$;
+revoke all on function public.revoke_planner_members(uuid[]) from public;
+grant execute on function public.revoke_planner_members(uuid[]) to authenticated;
 
 drop policy if exists "family members can see own membership" on public.planner_family_members;
 drop policy if exists "family can see approved member names" on public.planner_family_members;

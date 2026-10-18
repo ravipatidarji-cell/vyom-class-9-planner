@@ -19,7 +19,7 @@ function server(options = {}) {
     from(table) {
       const query = {
         select() { return query; }, eq() { return query; },
-        async maybeSingle() { return { data: table === "planner_family_members" ? { role: options.role || "admin" } : options.existingPhone ? { user_id: "existing" } : null, error: null }; },
+        async maybeSingle() { return { data: table === "planner_family_members" ? { role: options.role || "admin", active: options.active !== false } : options.existingPhone ? { user_id: "existing" } : null, error: null }; },
         async insert(row) { calls.push([table, row]); return { error: options.profileFails && table === "planner_family_private" ? { message: "Database unavailable" } : null }; },
       };
       return query;
@@ -38,7 +38,7 @@ function server(options = {}) {
 }
 const valid = { name: "Dhruva", phone: "+919876543210", password: "Separate-Pass42!" };
 test("rejects missing/expired sessions and non-admin users before account creation", async () => {
-  for (const [options, token, status] of [[{}, "", 401], [{ unauthenticated: true }, "expired", 401], [{ role: "member" }, "valid", 403]]) {
+  for (const [options, token, status] of [[{}, "", 401], [{ unauthenticated: true }, "expired", 401], [{ role: "member" }, "valid", 403], [{ active: false }, "valid", 403]]) {
     const instance = server(options);
     assert.equal((await instance.request(valid, token)).status, status);
     assert.equal(instance.calls.length, 0);

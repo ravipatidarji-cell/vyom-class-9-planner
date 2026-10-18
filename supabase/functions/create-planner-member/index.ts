@@ -23,9 +23,9 @@ Deno.serve(async (request: Request) => {
     const { data: identity, error: identityError } = await server.auth.getUser(token);
     if (identityError || !identity.user) return reply(401, { error: "Session expired; sign in again" });
     const { data: admin, error: adminError } = await server.from("planner_family_members")
-      .select("role").eq("user_id", identity.user.id).maybeSingle();
+      .select("role,active").eq("user_id", identity.user.id).maybeSingle();
     if (adminError) throw adminError;
-    if (admin?.role !== "admin") return reply(403, { error: "Only Admin can create accounts" });
+    if (admin?.role !== "admin" || admin.active !== true) return reply(403, { error: "Only active Admin can create accounts" });
     let input;
     try { input = await request.json(); }
     catch { return reply(400, { error: "Invalid JSON request" }); }

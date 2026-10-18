@@ -40,6 +40,18 @@
    details, account IDs, latest 100 login events and latest 100 comments, refreshing
    on opening, every 30 seconds while visible, and on realtime events.
    Login events are successful explicit app logins, not live presence.
+   Approved accounts appear in a table with name, private mobile, login ID, role,
+   unique account ID and recent login from those latest 100 events. Accounts
+   without a recorded login still appear; passwords are never listed.
+   Active non-Admin members have selection checkboxes and a WhatsApp link beside
+   their mobile. The bulk access-disable button confirms before calling
+   `revoke_planner_members`; Admin/self accounts cannot be disabled by this RPC.
+   It sets membership `active=false`, preserving Auth accounts, login history,
+   comments and shared progress. Membership-based RLS then denies future server
+   reads/writes for that member, including an existing Auth session. Previously
+   downloaded/cached data cannot be revoked; this does not delete the app, log
+   every browser out or erase offline copies. Disabled rows remain visibly
+   labelled in the table. Re-run the latest SQL before using these controls.
 
 The SQL and function must be deployed before this feature can work on the real
 server. Missing setup and network errors are reported, not treated as success.

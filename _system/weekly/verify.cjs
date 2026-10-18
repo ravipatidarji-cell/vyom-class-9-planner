@@ -404,7 +404,7 @@ async function verify() {
             async insert(row){sent.push({table,row});return {error:null}},
             then(resolve){
               const rows={
-                planner_family_members:[{user_id:'new-member',display_name:name,role:'member'}],
+                planner_family_members:[{user_id:'new-member',display_name:name,role:'member',active:true}],
                 planner_family_private:[{user_id:'new-member',phone:'+919876543210'}],
                 planner_login_activity:[{id:1,user_id:'new-member',created_at:'2026-10-18T10:00:00Z'}],
                 planner_comments:[{id:1,user_id:'new-member',verdict:'not_ok',body:'<img src=x onerror=alert(1)>',created_at:'2026-10-18T10:01:00Z'}],
@@ -426,6 +426,34 @@ async function verify() {
         const invite=document.getElementById('member-invite-text').value;
         const whatsapp=document.getElementById('member-invite-whatsapp').getAttribute('href');
         const inbox=document.getElementById('users-admin-comments').textContent;
+        const rosterTable=document.getElementById('users-admin-roster').closest('table');
+        const roster={rows:rosterTable.querySelectorAll('tbody tr').length,cells:rosterTable.querySelectorAll('tbody tr:first-child td').length,text:rosterTable.textContent};
+        roster.whatsapp=rosterTable.querySelector('a').href;
+        const originalConfirm=window.confirm;
+        const revokeButton=document.getElementById('revoke-selected-members');
+        await revokeButton.onclick();
+        roster.emptySelection=document.getElementById('revoke-members-status').textContent;
+        rosterTable.querySelector('[data-revoke-member]').checked=true;
+        let revokeCalls=0;
+        mock.rpc=async(functionName,args)=>{
+          revokeCalls++;
+          if(functionName!=='revoke_planner_members'||args.member_ids[0]!=='new-member')throw new Error('Wrong revoke payload');
+          return {data:1,error:null};
+        };
+        try{
+          window.confirm=()=>false;
+          await revokeButton.onclick();
+          roster.cancelCalls=revokeCalls;
+          window.confirm=()=>true;
+          await revokeButton.onclick();
+          roster.revokeCalls=revokeCalls;
+          roster.revokeStatus=document.getElementById('revoke-members-status').textContent;
+          loginActivityMembers=[{user_id:'protected-admin',display_name:'Admin',role:'admin',active:true},{user_id:'blocked-member',display_name:'Blocked',role:'member',active:false}];
+          renderAdminUsers();
+          roster.protectedCheckboxes=document.querySelectorAll('#users-admin-roster [data-revoke-member]').length;
+          roster.blockedLinks=document.querySelectorAll('#users-admin-roster a').length;
+          roster.blockedText=document.getElementById('users-admin-roster').textContent;
+        }finally{window.confirm=originalConfirm}
         const noInjectedElements=document.querySelectorAll('#users-admin-comments img,#users-admin-roster b b').length===0;
         const passwordCleared=document.getElementById('create-member-password').value==='';
         showTab('dash');
@@ -446,7 +474,7 @@ async function verify() {
         await document.getElementById('member-feedback-form').onsubmit({preventDefault(){}});
         const feedbackError=document.getElementById('member-feedback-status').textContent;
         const retainedDraft=document.getElementById('member-feedback-body').value;
-        return {adminVisible,invite,whatsapp,whatsappCleared,inbox,noInjectedElements,passwordCleared,inviteCleared,memberBlocked,feedbackVisible,feedbackStatus,feedbackError,retainedDraft,sent};
+        return {adminVisible,invite,whatsapp,whatsappCleared,inbox,roster,noInjectedElements,passwordCleared,inviteCleared,memberBlocked,feedbackVisible,feedbackStatus,feedbackError,retainedDraft,sent};
       }finally{
         supabaseClient=previous.client;mode=previous.mode;currentFamilyMember=previous.member;currentAuthUser=previous.user;
         loginActivityMembers=[];parentLoginActivity=[];renderParentLoginActivity();
@@ -464,6 +492,20 @@ async function verify() {
     assert.equal(whatsappUrl.searchParams.get("text").includes("Distinct-Pass42!"), false, "Passwords must not be placed in WhatsApp URLs");
     assert.equal(adminUiCheck.whatsappCleared, true);
     assert.match(adminUiCheck.inbox, /NOT OK/);
+    assert.equal(adminUiCheck.roster.rows, 1);
+    assert.equal(adminUiCheck.roster.cells, 7);
+    assert.match(adminUiCheck.roster.text, /BSAMENAMEB9876543210/);
+    assert.match(adminUiCheck.roster.text, /\+919876543210/);
+    assert.match(adminUiCheck.roster.text, /new-member/);
+    assert.equal(adminUiCheck.roster.text.includes("Distinct-Pass42!"), false);
+    assert.equal(new URL(adminUiCheck.roster.whatsapp).pathname, "/919876543210");
+    assert.match(adminUiCheck.roster.emptySelection, /checkbox select/);
+    assert.equal(adminUiCheck.roster.cancelCalls, 0);
+    assert.equal(adminUiCheck.roster.revokeCalls, 1);
+    assert.match(adminUiCheck.roster.revokeStatus, /1 member/);
+    assert.equal(adminUiCheck.roster.protectedCheckboxes, 0);
+    assert.equal(adminUiCheck.roster.blockedLinks, 0);
+    assert.match(adminUiCheck.roster.blockedText, /Access band/);
     assert.match(adminUiCheck.inbox, /<img src=x/);
     assert.equal(adminUiCheck.noInjectedElements, true, "Untrusted names/comments must be escaped");
     assert.equal(adminUiCheck.passwordCleared, true);
