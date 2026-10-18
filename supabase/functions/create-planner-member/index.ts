@@ -30,6 +30,36 @@ Deno.serve(async (request: Request) => {
     try { input = await request.json(); }
     catch { return reply(400, { error: "Invalid JSON request" }); }
     if (!input || typeof input !== "object") return reply(400, { error: "Account details required" });
+    if (input.action === "delete") {
+      const ids = input.memberIds;
+      if (!Array.isArray(ids) || ids.length < 1 || ids.length > 100 ||
+          ids.some(id => typeof id !== "string" || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)) ||
+          new Set(ids).size !== ids.length) {
+        return reply(400, { error: "Select 1-100 unique member accounts" });
+      }
+      const { data: members, error: membersError } = await server.from("planner_family_members")
+        .select("user_id,role").in("user_id", ids);
+      if (membersError) throw membersError;
+      if (!members || members.length !== ids.length) return reply(409, { error: "Member list changed; refresh before deleting" });
+      if (members.some(member => member.role !== "member" || member.user_id === identity.user.id)) {
+        return reply(403, { error: "Admin/self accounts cannot be deleted here" });
+      }
+      const deleted: string[] = [];
+      for (const id of ids) {
+        const { data: target, error: targetError } = await server.from("planner_family_members")
+          .select("role").eq("user_id", id).maybeSingle();
+        if (targetError || target?.role !== "member") {
+          return reply(200, { deleted, error: "Deletion stopped: member role/list changed. Refresh and check remaining accounts." });
+        }
+        const { error: deleteError } = await server.auth.admin.deleteUser(id);
+        if (deleteError) {
+          console.error("Member deletion failed", id, deleteError.message);
+          return reply(200, { deleted, error: "Some accounts were not deleted. Refresh the list and retry remaining members." });
+        }
+        deleted.push(id);
+      }
+      return reply(200, { deleted });
+    }
     const { name, phone, password } = input;
     if (typeof name !== "string" || !name.trim() || name.trim().length > 80 ||
         typeof phone !== "string" || !/^\+91[6-9]\d{9}$/.test(phone) ||

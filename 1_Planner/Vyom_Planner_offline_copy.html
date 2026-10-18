@@ -498,7 +498,8 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
         <p class="saved" id="users-admin-status" role="status" aria-live="polite"></p>
         <h3>Approved account members</h3>
         <p class="kd">Sab approved accounts, chahe abhi login kiya ho ya nahi. Recent login latest 100 sign-in records se hai; password yahan save/display nahi hota.</p>
-        <button class="chip" type="button" id="revoke-selected-members">Selected members ka access band karo</button>
+        <button class="chip" type="button" id="revoke-selected-members">Delete selected members</button>
+        <p class="kd">Checkbox select karke Delete dabayein. Confirmation ke baad account aur uski login/comment history permanently delete hogi. Admin protected hai.</p>
         <p class="saved" id="revoke-members-status" role="status" aria-live="polite"></p>
         <div class="tablewrap"><table><thead><tr><th>Select</th><th>Naam</th><th>Mobile / link bhejo</th><th>Login ID</th><th>Role / access</th><th>Account ID</th><th>Recent recorded login · IST</th></tr></thead><tbody id="users-admin-roster"></tbody></table></div>
         <h3>Recent logins · latest 100 · IST</h3><ul class="wl" id="users-admin-logins"></ul>
@@ -964,9 +965,9 @@ function renderAdminUsers(){
     const prefix=(m.display_name||'USER').normalize('NFKD').replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(0,24)||'USER';
     const phone=phones[m.user_id];
     const login=phone?prefix+phone.replace(/\D/g,'').slice(-10):'Existing login (mobile not recorded)';
-    const active=m.active===true,selectable=active&&m.role==='member'&&m.user_id!==currentAuthUser?.id;
-    const whatsapp=active&&m.role==='member'&&phone?memberWhatsAppUrl(phone,m.display_name||'Member',login):'';
-    return `<tr><td>${selectable?`<input type="checkbox" data-revoke-member="${esc(m.user_id)}" aria-label="${esc((m.display_name||'Member')+' ka access band karein')}">`:m.role==='admin'?'Protected':'Band'}</td><td><b>${esc(m.display_name||'Member')}</b></td><td>${esc(phone||'Not recorded')}${whatsapp?`<br><a class="chip" target="_blank" rel="noopener noreferrer" href="${esc(whatsapp)}">WhatsApp link bhejo</a>`:''}</td><td style="overflow-wrap:anywhere">${esc(login)}</td><td>${m.role==='admin'?'Admin':'Member'} · ${active?'Active':'Access band'}</td><td style="overflow-wrap:anywhere"><small>${esc(m.user_id)}</small></td><td>${last?esc(adminTime(last.created_at)):'Latest 100 records mein login nahi mila.'}</td></tr>`;
+    const active=m.active===true,selectable=m.role==='member'&&m.user_id!==currentAuthUser?.id;
+    const whatsapp=phone?memberWhatsAppUrl(phone,m.display_name||'Member',login):'';
+    return `<tr><td>${selectable?`<input type="checkbox" data-revoke-member="${esc(m.user_id)}" aria-label="${esc((m.display_name||'Member')+' ko delete karein')}">`:'Protected'}</td><td><b>${esc(m.display_name||'Member')}</b></td><td>${esc(phone||'Not recorded')}${whatsapp?`<br><a class="chip" target="_blank" rel="noopener noreferrer" href="${esc(whatsapp)}">WhatsApp link bhejo</a>`:''}</td><td style="overflow-wrap:anywhere">${esc(login)}</td><td>${m.role==='admin'?'Admin':'Member'} · ${active?'Active':'Access band'}</td><td style="overflow-wrap:anywhere"><small>${esc(m.user_id)}</small></td><td>${last?esc(adminTime(last.created_at)):'Latest 100 records mein login nahi mila.'}</td></tr>`;
   }).join('')||'<tr><td colspan="7">Koi member nahi mila.</td></tr>';
   document.getElementById('users-admin-logins').innerHTML=document.getElementById('parent-login-activity').innerHTML;
   document.getElementById('users-admin-comments').innerHTML=adminFeedback.map(row=>`<li><b>${esc(names[row.user_id]?.display_name||'Unlisted member')}</b> · <strong>${row.verdict==='ok'?'OK':row.verdict==='not_ok'?'NOT OK':'Legacy comment'}</strong><br><small style="overflow-wrap:anywhere">Account ID: ${esc(row.user_id)} · ${esc(adminTime(row.created_at))}</small><div style="white-space:pre-wrap">${esc(row.body)}</div></li>`).join('')||'<li>Abhi feedback nahi aaya.</li>';
@@ -1000,19 +1001,21 @@ document.getElementById('revoke-selected-members').onclick=async()=>{
   const ids=[...document.querySelectorAll('#users-admin-roster [data-revoke-member]:checked')].map(el=>el.dataset.revokeMember);
   const status=document.getElementById('revoke-members-status');
   if(!ids.length){status.textContent='Pehle member ke saamne checkbox select karein.';return}
-  if(!window.confirm(`${ids.length} member(s) ka app access band karna hai? Login/comment history safe rahegi. Pehle se downloaded/offline data remotely nahi hatega.`))return;
+  const selected=loginActivityMembers.filter(m=>ids.includes(m.user_id)).map(m=>m.display_name||m.user_id).join(', ');
+  if(!window.confirm(`PERMANENT DELETE: ${selected}\n${ids.length} account(s), unki login aur comment history delete hogi. Undo nahi hoga. Shared planner progress aur downloaded/offline copies nahi hatengi. Delete karein?`))return;
   const adminId=currentAuthUser?.id;
   revokingMembers=true;document.getElementById('revoke-selected-members').disabled=true;
   try{
-    const {data,error}=await supabaseClient.rpc('revoke_planner_members',{member_ids:ids});
+    const {data,error}=await supabaseClient.functions.invoke('create-planner-member',{body:{action:'delete',memberIds:ids}});
     if(error)throw error;
-    if(!Number.isInteger(data))throw new Error('Server se access-change count nahi mila.');
+    if(!Array.isArray(data?.deleted)||data.deleted.some(id=>!ids.includes(id)))throw new Error('Server se deleted accounts ki confirmation nahi mili.');
     if(currentAuthUser?.id!==adminId||currentFamilyMember?.role!=='admin')return;
-    status.textContent=`${data} member(s) ka server access band. History/comments safe hain.`;
+    status.textContent=`${data.deleted.length} member(s) permanently deleted.`+(data.error?' Error: '+data.error:'');
+    clearMemberInvite();
     await refreshAdminUsers();
   }catch(error){
-    console.error('Member access revoke failed:',error.message||error);
-    if(currentAuthUser?.id===adminId&&currentFamilyMember?.role==='admin')status.textContent='Access change confirm nahi hua: '+(error.message||'Unknown error')+'. List refresh karke status check karein; latest SQL setup zaroori hai.';
+    console.error('Member deletion failed:',error.message||error);
+    if(currentAuthUser?.id===adminId&&currentFamilyMember?.role==='admin')status.textContent='Delete confirm nahi hua: '+(error.message||'Unknown error')+'. List refresh karke status check karein; latest backend deploy zaroori hai.';
   }finally{revokingMembers=false;document.getElementById('revoke-selected-members').disabled=false}
 };
 document.getElementById('member-invite-clear').onclick=clearMemberInvite;

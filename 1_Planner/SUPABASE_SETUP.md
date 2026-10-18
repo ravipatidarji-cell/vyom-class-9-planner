@@ -43,15 +43,16 @@
    Approved accounts appear in a table with name, private mobile, login ID, role,
    unique account ID and recent login from those latest 100 events. Accounts
    without a recorded login still appear; passwords are never listed.
-   Active non-Admin members have selection checkboxes and a WhatsApp link beside
-   their mobile. The bulk access-disable button confirms before calling
-   `revoke_planner_members`; Admin/self accounts cannot be disabled by this RPC.
-   It sets membership `active=false`, preserving Auth accounts, login history,
-   comments and shared progress. Membership-based RLS then denies future server
-   reads/writes for that member, including an existing Auth session. Previously
-   downloaded/cached data cannot be revoked; this does not delete the app, log
-   every browser out or erase offline copies. Disabled rows remain visibly
-   labelled in the table. Re-run the latest SQL before using these controls.
+   Non-Admin members (including previously disabled members) have selection
+   checkboxes. **Delete selected members** asks for permanent-deletion
+   confirmation and calls the trusted function with `action: "delete"`.
+   Admin/self accounts are protected server-side. Auth account deletion cascades
+   to membership, private phone, login history and comments. Shared planner
+   progress and previously downloaded/offline copies are not deleted. Partial
+   batch failures report the confirmed deleted IDs and an explicit error; refresh
+   before retrying. Every recorded valid Indian mobile has a WhatsApp link button.
+   The older `revoke_planner_members` SQL RPC remains available for access-only
+   administration, but the table's Delete button now permanently deletes.
 
 The SQL and function must be deployed before this feature can work on the real
 server. Missing setup and network errors are reported, not treated as success.

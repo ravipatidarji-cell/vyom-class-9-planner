@@ -18,8 +18,9 @@ function server(options = {}) {
     },
     from(table) {
       const query = {
-        select() { return query; }, eq() { return query; },
-        async maybeSingle() { return { data: table === "planner_family_members" ? { role: options.role || "admin", active: options.active !== false } : options.existingPhone ? { user_id: "existing" } : null, error: null }; },
+        select() { return query; }, eq(column, value) { query.id=value; return query; },
+        async in(column, ids) { return { data: ids.map(id=>({user_id:id,role:options.targetRole||"member"})), error:null }; },
+        async maybeSingle() { return { data: table === "planner_family_members" ? { role: query.id === "caller" ? options.role || "admin" : options.targetRole || "member", active: options.active !== false } : options.existingPhone ? { user_id: "existing" } : null, error: null }; },
         async insert(row) { calls.push([table, row]); return { error: options.profileFails && table === "planner_family_private" ? { message: "Database unavailable" } : null }; },
       };
       return query;
@@ -83,4 +84,23 @@ test("rolls back new Auth account if profile setup fails; reports cleanup failur
     assert.ok(instance.calls.some(call => call[0] === "delete"));
     assert.match((await response.json()).error, cleanupFails ? /inspect\/remove Auth user/ : /new account was removed/);
   }
+});
+const memberId="12345678-1234-1234-1234-123456789012";
+test("permanent deletion validates targets and protects Admin accounts", async () => {
+  const protectedServer=server({targetRole:"admin"});
+  assert.equal((await protectedServer.request({action:"delete",memberIds:[memberId]})).status,403);
+  assert.equal(protectedServer.calls.length,0);
+  const instance=server();
+  assert.equal((await instance.request({action:"delete",memberIds:[]})).status,400);
+  assert.equal((await instance.request({action:"delete",memberIds:[memberId,memberId]})).status,400);
+  const response=await instance.request({action:"delete",memberIds:[memberId]});
+  assert.deepEqual((await response.json()).deleted,[memberId]);
+  assert.deepEqual(instance.calls,[["delete",memberId]]);
+});
+test("permanent deletion reports failure instead of claiming success",async()=>{
+  const instance=server({cleanupFails:true});
+  const response=await instance.request({action:"delete",memberIds:[memberId]});
+  const data=await response.json();
+  assert.deepEqual(data.deleted,[]);
+  assert.match(data.error,/not deleted/);
 });

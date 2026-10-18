@@ -435,10 +435,12 @@ async function verify() {
         roster.emptySelection=document.getElementById('revoke-members-status').textContent;
         rosterTable.querySelector('[data-revoke-member]').checked=true;
         let revokeCalls=0;
-        mock.rpc=async(functionName,args)=>{
+        const createInvoke=mock.functions.invoke;
+        mock.functions.invoke=async(functionName,args)=>{
+          if(args.body.action!=='delete')return createInvoke(functionName,args);
           revokeCalls++;
-          if(functionName!=='revoke_planner_members'||args.member_ids[0]!=='new-member')throw new Error('Wrong revoke payload');
-          return {data:1,error:null};
+          if(functionName!=='create-planner-member'||args.body.memberIds[0]!=='new-member')throw new Error('Wrong delete payload');
+          return {data:{deleted:['new-member']},error:null};
         };
         try{
           window.confirm=()=>false;
@@ -503,7 +505,7 @@ async function verify() {
     assert.equal(adminUiCheck.roster.cancelCalls, 0);
     assert.equal(adminUiCheck.roster.revokeCalls, 1);
     assert.match(adminUiCheck.roster.revokeStatus, /1 member/);
-    assert.equal(adminUiCheck.roster.protectedCheckboxes, 0);
+    assert.equal(adminUiCheck.roster.protectedCheckboxes, 1, "Disabled member must also be deletable; Admin must stay protected");
     assert.equal(adminUiCheck.roster.blockedLinks, 0);
     assert.match(adminUiCheck.roster.blockedText, /Access band/);
     assert.match(adminUiCheck.inbox, /<img src=x/);
