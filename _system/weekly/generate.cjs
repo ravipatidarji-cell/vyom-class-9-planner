@@ -3,6 +3,7 @@ const path = require("node:path");
 const os = require("node:os");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright-core");
+const { parentPassword, protectParentPdf } = require("./pdf-protection.cjs");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const PLANNER = path.join(ROOT, "1_Planner", "Vyom_Planner_offline_copy.html");
@@ -66,7 +67,7 @@ function addEveningRoutine(plan) {
   }
   const parts = [
     [0, "Mistakes notebook banao; har subject ke liye 2 page rakho."],
-    [4, "19 October ke pehle Maths weekly test ka syllabus aur student pack dekho."],
+    [4, "18 October ke pehle Maths weekly test ka syllabus aur student pack dekho."],
     [4, "Agle week ke tasks aur test ki tayyari parent ke saath check karo."],
     [0, "Formula / keywords notebook banao; subjects ke sections taiyar karo."],
     [0, "Dono notebooks ke index aur chapter headings poore karo."],
@@ -193,7 +194,7 @@ function buildWeeks(plan) {
   return [...groups.values()];
 }
 function testContent(test, bank) {
-  const date = originalDate(test.d);
+  const date = test.sourceDate || (["Weekly test", "Pre-annual mock"].includes(test.kind) ? test.d : originalDate(test.d));
   if (test.kind === "Daily test") {
     const daily = bank.daily[date];
     if (!daily) throw new Error(`Daily test bank missing: ${test.id} (source ${date})`);
@@ -365,6 +366,7 @@ function browserExecutable() {
   return executable;
 }
 async function generate() {
+  parentPassword();
   const plan = loadPlan();
   const bank = JSON.parse(fs.readFileSync(path.join(__dirname, "question-bank.json"), "utf8"));
   const weeks = buildWeeks(plan);
@@ -423,6 +425,7 @@ async function generate() {
         const pdf = await pdfjs.getDocument({ data: new Uint8Array(bytes), isEvalSupported: false }).promise;
         layout.pages = pdf.numPages;
         await pdf.destroy();
+        if (kind === "parent") protectParentPdf(staged);
         fs.renameSync(staged, destination);
       }
       manifest.push({

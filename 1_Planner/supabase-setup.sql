@@ -37,6 +37,11 @@ create table if not exists public.planner_comments (
 create index if not exists planner_comments_created_at_idx
   on public.planner_comments(created_at desc);
 
+alter table public.planner_comments add column if not exists verdict text;
+alter table public.planner_comments drop constraint if exists planner_comments_verdict_check;
+alter table public.planner_comments add constraint planner_comments_verdict_check
+  check (verdict is null or verdict in ('ok', 'not_ok'));
+
 create table if not exists public.planner_login_activity (
   id bigint generated always as identity primary key,
   user_id uuid not null references public.planner_family_members(user_id) on delete cascade,
@@ -88,7 +93,7 @@ drop policy if exists "family can see approved member names" on public.planner_f
 create policy "family can see approved member names"
   on public.planner_family_members for select
   to authenticated
-  using (public.is_planner_family_member());
+  using (user_id = auth.uid() or public.is_planner_family_admin());
 
 drop policy if exists "parent admins can read private family phones" on public.planner_family_private;
 create policy "parent admins can read private family phones"
@@ -97,16 +102,21 @@ create policy "parent admins can read private family phones"
   using (public.is_planner_family_admin());
 
 drop policy if exists "family can read comments" on public.planner_comments;
-create policy "family can read comments"
+drop policy if exists "admins can read comments" on public.planner_comments;
+create policy "admins can read comments"
   on public.planner_comments for select
   to authenticated
-  using (public.is_planner_family_member());
+  using (public.is_planner_family_admin());
 
 drop policy if exists "members can post own comments" on public.planner_comments;
 create policy "members can post own comments"
   on public.planner_comments for insert
   to authenticated
-  with check (user_id = auth.uid() and public.is_planner_family_member());
+  with check (
+    user_id = auth.uid() and public.is_planner_family_member()
+    and verdict in ('ok', 'not_ok')
+    and created_at between now() - interval '1 minute' and now() + interval '1 minute'
+  );
 
 drop policy if exists "members can record own sign-ins" on public.planner_login_activity;
 create policy "members can record own sign-ins"

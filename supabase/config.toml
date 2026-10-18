@@ -1,0 +1,2 @@
+[functions.create-planner-member]
+verify_jwt = false

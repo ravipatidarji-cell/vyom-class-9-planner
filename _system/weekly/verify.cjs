@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright-core");
+const { parentPassword } = require("./pdf-protection.cjs");
 const { ROOT, PLANNER, OUTPUT, loadPlan, buildWeeks, testContent, monday, addDays, browserExecutable, SANSKRIT_UNITS } = require("./generate.cjs");
 
 async function verify() {
@@ -10,6 +11,30 @@ async function verify() {
   const bank = JSON.parse(fs.readFileSync(path.join(__dirname, "question-bank.json"), "utf8"));
   const manifest = JSON.parse(fs.readFileSync(path.join(OUTPUT, "manifest.json"), "utf8"));
   const expectedWeeks = buildWeeks(plan);
+  const weeklyTests = plan.tests.filter((test) => test.kind === "Weekly test");
+  const weeklyMocks = plan.tests.filter((test) => test.kind === "Pre-annual mock");
+  assert.ok(weeklyTests.every((test) => new Date(`${test.d}T12:00:00`).getDay() === 0), "Weekly tests must be on Sundays");
+  assert.ok(weeklyMocks.every((test) => new Date(`${test.d}T12:00:00`).getDay() === 0), "Pre-annual mock must be on Sunday");
+  assert.ok(plan.tests.filter((test) => test.kind === "Daily test").every((test) => new Date(`${test.d}T12:00:00`).getDay() !== 0), "Sundays must not carry normal daily tests");
+  for (const test of [...weeklyTests, ...weeklyMocks]) {
+    const day = plan.days.find((item) => item.d === test.d);
+    assert.equal(day?.ty, "sunday", `${test.id} must use the Sunday schedule`);
+    assert.ok(day.ts.some((task) => task.test === test.id), `${test.id} must be listed on its schedule day`);
+  }
+  assert.equal(plan.days.find((day) => day.d === "2026-10-18")?.ty, "sunday", "First Sunday must use the Sunday schedule");
+  assert.ok(weeklyTests.some((test) => test.d === "2026-10-18"), "First Sunday must include its weekly Maths test");
+  assert.equal(plan.days.find((day) => day.d === "2026-10-19")?.ty, "holiday", "Dussehra break must not become a school day");
+  assert.equal(plan.days.find((day) => day.d === "2026-10-20")?.ty, "light", "Dussehra schedule must stay on October 20");
+  assert.equal(plan.days.find((day) => day.d === "2026-10-21")?.ty, "holiday", "The Dussehra break must remain in place");
+  assert.equal(plan.days.find((day) => day.d === "2026-12-06")?.ty, "sunday", "Pre-annual mock must match the dated Sunday schedule");
+  assert.equal(plan.days.find((day) => day.d === "2026-12-07")?.ty, "exam", "Pre-annual exams must start on December 7");
+  assert.equal(plan.days.find((day) => day.d === "2026-12-20")?.lb, "Pre-annual analysis", "Post-exam analysis must remain on December 20");
+  const movedKickoffQuiz = plan.tests.find((test) => test.id === "D2026-10-12");
+  assert.equal(movedKickoffQuiz?.d, "2026-11-14", "Kickoff quiz must follow the rescheduled lessons");
+  assert.equal(movedKickoffQuiz?.sourceDate, "2026-10-12", "Moved kickoff quiz must keep its original question bank");
+  assert.ok(plan.days.find((day) => day.d === "2026-10-14")?.ts.some((task) => task.c === "M5" && task.x.includes("5.1–5.2")), "Circle foundations must be rescheduled before the weekly test");
+  assert.ok(plan.days.find((day) => day.d === "2026-10-31")?.ts.some((task) => task.c === "AI1" && task.k === "new"), "Communication Skills must have a weekday study block");
+  assert.ok(plan.days.find((day) => day.d === "2026-11-14")?.ts.some((task) => task.c === "AI3" && task.k === "new"), "Self-Management must have a weekday study block");
   assert.equal(manifest.weeks.length, 23);
   assert.equal(manifest.start, "2026-10-12");
   assert.equal(manifest.end, "2027-03-17");
@@ -37,10 +62,10 @@ async function verify() {
     assert.ok(chapter.d1 && chapter.dl?.length && chapter.dr, `Chapter is missing planned study/revision dates: ${chapter.id}`);
   }
   assert.equal(expectedWeeks.flatMap((week) => week.days).length, 157);
-  assert.equal(expectedWeeks.flatMap((week) => week.tests).length, 110);
+  assert.equal(expectedWeeks.flatMap((week) => week.tests).length, 108);
   assert.equal(expectedWeeks.at(-1).days.length, 3);
   const allIds = manifest.weeks.flatMap((week) => week.testIds);
-  assert.equal(new Set(allIds).size, 110);
+  assert.equal(new Set(allIds).size, 108);
   assert.deepEqual([...allIds].sort(), plan.tests.map((test) => test.id).sort());
   const html = fs.readFileSync(PLANNER, "utf8");
   const embedded = /<script id="weekly-packs" type="application\/json">([\s\S]*?)<\/script>/.exec(html);
@@ -79,7 +104,12 @@ async function verify() {
       assert.ok(file.startsWith(OUTPUT + path.sep));
       assert.ok(fs.statSync(file).size > 1000);
       assert.equal(fs.readFileSync(file).subarray(0, 5).toString(), "%PDF-");
-      const pdf = await pdfjs.getDocument({ data: new Uint8Array(fs.readFileSync(file)), useSystemFonts: false, isEvalSupported: false }).promise;
+      if (kind === "parent") {
+        for (const password of [undefined, "incorrect-password"]) {
+          await assert.rejects(pdfjs.getDocument({ data: new Uint8Array(fs.readFileSync(file)), password, isEvalSupported: false }).promise, error => error.name === "PasswordException", `Parent key must reject missing/wrong passwords: ${file}`);
+        }
+      }
+      const pdf = await pdfjs.getDocument({ data: new Uint8Array(fs.readFileSync(file)), password: kind === "parent" ? parentPassword() : undefined, useSystemFonts: false, isEvalSupported: false }).promise;
       assert.equal(pdf.numPages, kind === "student" ? week.studentPages : week.parentPages);
       assert.ok(pdf.numPages >= (kind === "student" ? week.days + 3 : 2));
       let text = "";
@@ -110,9 +140,8 @@ async function verify() {
           assert.ok(text.includes("Question:"));
           assert.ok(text.includes("Expected answer / marking points:"));
         }
-        if (index === 0) {
-          assert.ok(text.includes("Write the stages of the communication cycle in the correct order."));
-          assert.ok(text.includes("Sender") && text.includes("Feedback."));
+        if (index === 4) {
+          assert.ok(text.includes("Define osmosis."), "Moved kickoff quiz must be in its new parent pack.");
         }
       }
       if ((index === 0 && kind === "student") || (index === 0 && kind === "parent") || (index === 17 && kind === "student")) {
@@ -140,8 +169,71 @@ async function verify() {
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(pathToFileURL(PLANNER).href, { waitUntil: "load" });
     await page.waitForSelector("#weeklyprint a[data-native-pdf]");
+    assert.equal(await page.locator("#master-project-pdf").isVisible(), true, "Master PDF card must be visible on the dashboard");
+    const masterLinks = await page.locator("#master-project-pdf a[data-native-pdf]").evaluateAll(anchors => anchors.map(a => ({ href: a.getAttribute("href"), download: a.hasAttribute("download") })));
+    assert.equal(masterLinks.length, 2);
+    for (const link of masterLinks) {
+      assert.equal(link.href, "../5_Weekly_Packs/Vyom_Complete_Student_Project.pdf");
+      assert.ok(fs.existsSync(path.resolve(path.dirname(PLANNER), link.href)), "Master PDF dashboard link must resolve");
+    }
+    assert.equal(masterLinks[1].download, true);
     const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)[1];
     new (require("node:vm").Script)(script);
+    const loginErrors = await page.evaluate(() => [
+      cloudSignInError({ code: "invalid_credentials", message: "Invalid login credentials", status: 400 }),
+      cloudSignInError({ code: "email_not_confirmed", message: "Email not confirmed", status: 400 }),
+      cloudSignInError({ code: "over_request_rate_limit", message: "Too many requests", status: 429 }),
+      cloudSignInError({ message: "Failed to fetch" }),
+    ]);
+    assert.match(loginErrors[0], /Invalid login credentials \[invalid_credentials\] \(HTTP 400\)/);
+    const mappedLogin = await page.evaluate(async () => {
+      const previous=supabaseClient,calls=[];
+      try {
+        supabaseClient={auth:{async signInWithPassword(value){calls.push(value);return {data:{user:{id:'member'}},error:null}}}};
+        await signInPlannerAccount({phone:'+919876543210',password:'test-password'});
+        await signInPlannerAccount({email:'admin@example.test',password:'admin-password'});
+        supabaseClient={auth:{async signInWithPassword(value){calls.push(value);return {data:null,error:{code:value.phone?'phone_provider_disabled':'invalid_credentials'}}}}};
+        const failed=await signInPlannerAccount({phone:'+919876543210',password:'wrong-password'});
+        return {calls,code:failed.error.code};
+      }finally{supabaseClient=previous}
+    });
+    assert.equal(mappedLogin.calls[0].email, "member.919876543210@members.vyom.invalid");
+    assert.equal(mappedLogin.calls[0].phone, undefined);
+    assert.equal(mappedLogin.calls[1].email, "admin@example.test");
+    assert.equal(mappedLogin.calls[3].phone, "+919876543210", "Existing phone accounts must still be attempted");
+    assert.equal(mappedLogin.code, "invalid_credentials", "Disabled legacy phone auth must not mask the actual password error");
+    assert.match(loginErrors[1], /Email verification/);
+    assert.match(loginErrors[2], /ruk kar/);
+    assert.match(loginErrors[3], /Failed to fetch/);
+    await page.getByRole("tab", { name: "Aaj", exact: true }).click();
+    await page.locator("#pick").fill("2026-10-12");
+    await page.locator("#pick").dispatchEvent("change");
+    assert.ok((await page.locator("#dailychapters").innerText()).includes("Cell: The Building Block of Life"));
+    await page.locator('#dailychapters [data-ch="S2"][data-k="0"]').check();
+    await page.getByRole("tab", { name: "Chapters", exact: true }).click();
+    await page.locator('#cfilters [data-s="S"]').click();
+    assert.equal(await page.locator('#ctbody [data-ch="S2"][data-k="0"]').isChecked(), true, "Daily checklist must share chapter progress");
+    await page.getByRole("tab", { name: "Aaj", exact: true }).click();
+    await page.locator('#dailychapters [data-day-task="0"]').click();
+    assert.equal(await page.locator("#tk-0").evaluate((input) => input === document.activeElement), true);
+    await page.locator("#tk-0").check();
+    assert.ok((await page.locator("#dailychapters li").filter({ has: page.locator('[data-day-task="0"]') }).innerText()).includes("Done"), "Daily chapter status must follow the schedule tick");
+    await page.locator("#tk-0").uncheck();
+    await page.getByRole("tab", { name: "Chapters", exact: true }).click();
+    await page.locator('#ctbody [data-ch="S2"][data-k="0"]').uncheck();
+    assert.equal(await page.locator('#dailychapters [data-ch="S2"][data-k="0"]').isChecked(), false, "Overview changes must update the daily checklist");
+    await page.getByRole("tab", { name: "Aaj", exact: true }).click();
+    for (const date of ["2026-10-18", "2026-10-20", "2027-01-20"]) {
+      await page.locator("#pick").fill(date);
+      await page.locator("#pick").dispatchEvent("change");
+      const counts = await page.evaluate(() => ({
+        actual: document.querySelectorAll("#dailychapters [data-ch]").length,
+        expected: CH.filter(chapter => DAYS[dayIdx[cur]].ts.some(task => isChapterSession(task, chapter))).length * CHAPTER_STAGES.length,
+      }));
+      assert.equal(counts.actual, counts.expected, `Daily chapters must match the selected date: ${date}`);
+    }
+    await page.locator("#pick").fill("2026-10-12");
+    await page.locator("#pick").dispatchEvent("change");
     const links = await page.locator('a[href$=".pdf"]').evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute("href")));
     for (const link of links) assert.ok(fs.existsSync(path.resolve(path.dirname(PLANNER), link)), `Dashboard link missing: ${link}`);
     const current = await page.locator("#weeklyprint").innerText();
@@ -173,10 +265,9 @@ async function verify() {
     await page.getByRole("tab", { name: "Hafta", exact: true }).click();
     assert.ok(await page.locator("#weekprint a[data-native-pdf]").count());
     await page.getByRole("tab", { name: "Parent", exact: true }).click();
-    assert.ok(await page.locator("#parentprint details a").count());
-    const parentTabHref = await page.locator("#parentprint details a").first().getAttribute("href");
-    assert.ok(parentTabHref.includes("Parent_Answer_Keys/") && parentTabHref.endsWith("_Parent_Key.pdf"));
-    assert.notEqual(parentTabHref, await page.locator("#parentprint > div a[data-native-pdf]").first().getAttribute("href"));
+    assert.match(await page.locator("#parent-access-status").innerText(), /Admin/i);
+    assert.equal(await page.locator("#parent-content").isVisible(), false, "Parent review must stay hidden without Admin sign-in");
+    await page.locator("#close-cloud-sync").click();
     await page.getByRole("tab", { name: "Chapters", exact: true }).click();
     assert.equal(await page.locator("#coursefilters [data-course]").count(), 4);
     assert.ok((await page.locator("#coursebars").innerText()).includes("Old course"));
@@ -211,11 +302,186 @@ async function verify() {
     assert.ok(testStudentHref.endsWith("_Student.pdf"));
     assert.ok(testParentHref.includes("Parent_Answer_Keys/") && testParentHref.endsWith("_Parent_Key.pdf"));
     assert.notEqual(testStudentHref, testParentHref, "Test tab must link its parent key, not the student PDF");
+    await page.getByRole("tab", { name: "Chapters", exact: true }).click();
+    await page.locator('#coursefilters [data-course="all"]').click();
+    await page.locator("#ctbody .topic-details summary").first().click();
+    const topic = page.locator("#ctbody [data-topic-date]").first();
+    const topicDate = await topic.getAttribute("data-topic-date");
+    const topicIndex = await topic.getAttribute("data-topic-index");
+    await topic.check();
+    assert.equal(await page.evaluate(({ date, index }) => !!S.days[date].done[index], { date: topicDate, index: topicIndex }), true);
+    await page.reload({ waitUntil: "load" });
+    assert.equal(await page.evaluate(({ date, index }) => !!S.days[date].done[index], { date: topicDate, index: topicIndex }), true, "Topic progress must persist after reload");
+    await page.evaluate(({ date }) => { cur = date; showTab("today"); renderDay(); }, { date: topicDate });
+    assert.equal(await page.locator(`#tk-${topicIndex}`).isChecked(), true, "Topic checkbox must update its daily task");
+    await page.locator(`#tk-${topicIndex}`).uncheck();
+    await page.getByRole("tab", { name: "Chapters", exact: true }).click();
+    await page.locator('#cfilters [data-s="M"]').click();
+    assert.equal(await page.locator(`#ctbody [data-topic-date="${topicDate}"][data-topic-index="${topicIndex}"]`).first().isChecked(), false, "Daily uncheck must update topic progress");
+    await page.evaluate(() => { window.print = () => {}; });
+    await page.locator("#print-chapter-subject").click();
+    const selectedPrint = await page.evaluate(() => ({
+      actual: document.querySelectorAll("#chapter-print li").length,
+      expected: filteredChapters().reduce((sum, c) => sum + Math.max(1, chapterSessions(c.id).length), 0),
+      subjects: document.querySelectorAll("#chapter-print .print-subject").length,
+    }));
+    assert.equal(selectedPrint.actual, selectedPrint.expected);
+    assert.equal(selectedPrint.subjects, 1);
+    await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+    await page.locator("#print-chapter-all").click();
+    const fullPrint = await page.evaluate(() => ({
+      actual: document.querySelectorAll("#chapter-print li").length,
+      expected: CH.reduce((sum, c) => sum + Math.max(1, chapterSessions(c.id).length), 0),
+      chapters: document.querySelectorAll("#chapter-print h3").length,
+      total: CH.length,
+    }));
+    assert.equal(fullPrint.actual, fullPrint.expected, "Full print must include every chapter's study/revision block or an explicit missing-block warning");
+    assert.equal(fullPrint.chapters, fullPrint.total);
+    await page.emulateMedia({ media: "print" });
+    assert.equal(await page.locator("#chapter-print").isVisible(), true);
+    assert.equal(await page.locator("#v-chapters").isVisible(), false, "Only the checklist should print");
+    const checklistPdf = await page.pdf({ format: "A4", margin: { top: "12mm", bottom: "12mm", left: "12mm", right: "12mm" } });
+    assert.ok(checklistPdf.length > 10000, "Printable checklist must produce a nonempty PDF");
+    await page.evaluate(() => window.dispatchEvent(new Event("afterprint")));
+    await page.emulateMedia({ media: "screen" });
+    assert.equal(await page.locator("#chapter-print").isVisible(), false);
+    assert.equal(await page.locator("#v-chapters").isVisible(), true, "App must return after print/cancel");
+    const loginListCheck = await page.evaluate(async () => {
+      const originalClient=supabaseClient;
+      const originalMode=mode;
+      const originalMember=currentFamilyMember;
+      const originalUser=currentAuthUser;
+      try {
+        mode='supabase';
+        currentFamilyMember={role:'admin'};
+        currentAuthUser={id:'admin-account'};
+        const records=[
+          {id:1,user_id:'account-one',created_at:'2026-10-18T10:00:01Z'},
+          {id:2,user_id:'account-two',created_at:'2026-10-18T10:00:02Z'},
+        ];
+        const members=[
+          {user_id:'account-one',display_name:'Same Name',role:'member'},
+          {user_id:'account-two',display_name:'Same Name',role:'admin'},
+        ];
+        supabaseClient={from(table){
+          const query={select(){return query},order(){return query},limit(){return query},then(resolve){resolve({data:table==='planner_login_activity'?records:members,error:null})}};
+          return query;
+        }};
+        await updateParentLoginList();
+        const text=document.getElementById('parent-login-activity').textContent;
+        const status=document.getElementById('parent-login-activity-status').textContent;
+        supabaseClient={from(){
+          const query={select(){return query},order(){return query},limit(){return query},then(resolve){resolve({data:null,error:{message:'Connection unavailable'}})}};
+          return query;
+        }};
+        await updateParentLoginList();
+        return {text,status,error:document.getElementById('parent-login-activity-status').textContent,rows:document.querySelectorAll('#parent-login-activity li').length};
+      } finally {
+        supabaseClient=originalClient;mode=originalMode;currentFamilyMember=originalMember;currentAuthUser=originalUser;
+        loginActivityMembers=[];parentLoginActivity=[];renderParentLoginActivity();
+      }
+    });
+    assert.match(loginListCheck.text, /account-one/);
+    assert.match(loginListCheck.text, /account-two/);
+    assert.match(loginListCheck.text, /Member/);
+    assert.match(loginListCheck.text, /Admin/);
+    assert.match(loginListCheck.text, /IST/);
+    assert.equal(loginListCheck.rows, 2, "Same-name accounts must remain distinguishable");
+    assert.match(loginListCheck.status, /List updated/);
+    assert.match(loginListCheck.error, /Connection unavailable/);
+    const adminUiCheck = await page.evaluate(async () => {
+      const previous={client:supabaseClient,mode,member:currentFamilyMember,user:currentAuthUser};
+      const sent=[];
+      const name='<b>Same Name</b>';
+      const mock={
+        functions:{async invoke(functionName,{body}){
+          sent.push({functionName,body});
+          return {data:{userId:'new-member',loginId:'SAMENAME9876543210',displayName:name},error:null};
+        }},
+        from(table){
+          const query={
+            select(){return query},order(){return query},limit(){return query},
+            async insert(row){sent.push({table,row});return {error:null}},
+            then(resolve){
+              const rows={
+                planner_family_members:[{user_id:'new-member',display_name:name,role:'member'}],
+                planner_family_private:[{user_id:'new-member',phone:'+919876543210'}],
+                planner_login_activity:[{id:1,user_id:'new-member',created_at:'2026-10-18T10:00:00Z'}],
+                planner_comments:[{id:1,user_id:'new-member',verdict:'not_ok',body:'<img src=x onerror=alert(1)>',created_at:'2026-10-18T10:01:00Z'}],
+              };
+              resolve({data:rows[table]||[],error:null});
+            },
+          };
+          return query;
+        },
+      };
+      try{
+        mode='supabase';currentAuthUser={id:'admin'};currentFamilyMember={role:'admin',display_name:'Admin'};supabaseClient=mock;
+        renderUserAccess();
+        const adminVisible=!document.getElementById('users-admin-tab').hidden;
+        document.getElementById('create-member-name').value='Same Name';
+        document.getElementById('create-member-phone').value='9876543210';
+        document.getElementById('create-member-password').value='Distinct-Pass42!';
+        await document.getElementById('create-member-form').onsubmit({preventDefault(){}});
+        const invite=document.getElementById('member-invite-text').value;
+        const whatsapp=document.getElementById('member-invite-whatsapp').getAttribute('href');
+        const inbox=document.getElementById('users-admin-comments').textContent;
+        const noInjectedElements=document.querySelectorAll('#users-admin-comments img,#users-admin-roster b b').length===0;
+        const passwordCleared=document.getElementById('create-member-password').value==='';
+        showTab('dash');
+        const inviteCleared=document.getElementById('member-invite-text').value==='';
+        const whatsappCleared=!document.getElementById('member-invite-whatsapp').hasAttribute('href')&&document.getElementById('member-invite-whatsapp').hidden;
+        currentAuthUser={id:'new-member'};currentFamilyMember={role:'member',display_name:'Same Name'};
+        renderParentLoginActivity();
+        showTab('users');
+        const memberBlocked=document.getElementById('users-admin-tab').hidden&&document.getElementById('v-users').hidden&&document.getElementById('users-admin-comments').textContent==='';
+        const feedbackVisible=!document.getElementById('member-feedback-card').hidden;
+        document.getElementById('member-feedback-verdict').value='ok';
+        document.getElementById('member-feedback-body').value='Schedule samajh aa gaya';
+        await document.getElementById('member-feedback-form').onsubmit({preventDefault(){}});
+        const feedbackStatus=document.getElementById('member-feedback-status').textContent;
+        mock.from=()=>({async insert(){return {error:{message:'Network unavailable'}}}});
+        document.getElementById('member-feedback-verdict').value='not_ok';
+        document.getElementById('member-feedback-body').value='Test ki dikkat';
+        await document.getElementById('member-feedback-form').onsubmit({preventDefault(){}});
+        const feedbackError=document.getElementById('member-feedback-status').textContent;
+        const retainedDraft=document.getElementById('member-feedback-body').value;
+        return {adminVisible,invite,whatsapp,whatsappCleared,inbox,noInjectedElements,passwordCleared,inviteCleared,memberBlocked,feedbackVisible,feedbackStatus,feedbackError,retainedDraft,sent};
+      }finally{
+        supabaseClient=previous.client;mode=previous.mode;currentFamilyMember=previous.member;currentAuthUser=previous.user;
+        loginActivityMembers=[];parentLoginActivity=[];renderParentLoginActivity();
+      }
+    });
+    assert.equal(adminUiCheck.adminVisible, true);
+    assert.match(adminUiCheck.invite, /SAMENAME9876543210/);
+    assert.match(adminUiCheck.invite, /Distinct-Pass42!/);
+    assert.match(adminUiCheck.invite, /https:\/\//);
+    const whatsappUrl=new URL(adminUiCheck.whatsapp);
+    assert.equal(whatsappUrl.hostname, "wa.me");
+    assert.equal(whatsappUrl.pathname, "/919876543210");
+    assert.match(whatsappUrl.searchParams.get("text"), /SAMENAME9876543210/);
+    assert.match(whatsappUrl.searchParams.get("text"), /https:\/\//);
+    assert.equal(whatsappUrl.searchParams.get("text").includes("Distinct-Pass42!"), false, "Passwords must not be placed in WhatsApp URLs");
+    assert.equal(adminUiCheck.whatsappCleared, true);
+    assert.match(adminUiCheck.inbox, /NOT OK/);
+    assert.match(adminUiCheck.inbox, /<img src=x/);
+    assert.equal(adminUiCheck.noInjectedElements, true, "Untrusted names/comments must be escaped");
+    assert.equal(adminUiCheck.passwordCleared, true);
+    assert.equal(adminUiCheck.inviteCleared, true, "Private invite must clear when leaving Admin tab");
+    assert.equal(adminUiCheck.memberBlocked, true, "Member must not see Admin tab or cached inbox");
+    assert.equal(adminUiCheck.feedbackVisible, true);
+    assert.match(adminUiCheck.feedbackStatus, /Admin ko bhej diya/);
+    assert.match(adminUiCheck.feedbackError, /Network unavailable/);
+    assert.equal(adminUiCheck.retainedDraft, "Test ki dikkat", "Failed send must retain draft for retry");
+    assert.equal(adminUiCheck.sent[0].functionName, "create-planner-member");
+    assert.equal(adminUiCheck.sent[0].body.phone, "+919876543210");
+    assert.equal(adminUiCheck.sent[1].row.user_id, "new-member");
+    assert.equal(adminUiCheck.sent[1].row.verdict, "ok");
     assert.deepEqual(errors, [], "Dashboard JavaScript errors");
   } finally {
     await browser.close();
   }
-  console.log(`PASS: ${manifest.weeks.length} weeks, 46 A4 PDFs, ${totalPages} pages, 157 days, 110 tests, matching keys, offline links and Sunday handover.`);
+  console.log(`PASS: ${manifest.weeks.length} weeks, 46 A4 PDFs, ${totalPages} pages, 157 days, 108 tests, matching keys, offline links and Sunday handover.`);
 }
 
 verify().catch((error) => { console.error(error); process.exitCode = 1; });

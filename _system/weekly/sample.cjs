@@ -3,6 +3,7 @@ const path = require("node:path");
 const assert = require("node:assert/strict");
 const { pathToFileURL } = require("node:url");
 const { chromium } = require("playwright-core");
+const { protectParentPdf } = require("./pdf-protection.cjs");
 const { ROOT, loadPlan, testContent, studentHtml, parentHtml, monday, addDays, browserExecutable, wrapper } = require("./generate.cjs");
 
 const DATE = "2026-10-13";
@@ -176,6 +177,7 @@ async function main() {
         if (kind === "Parent_Key") assert.ok(pdfText.includes("Expected answer / marking points"));
         results[kind] = { filename, pages: pdf.numPages, ...audit };
         await pdf.destroy();
+        if (kind === "Parent_Key") protectParentPdf(path.join(output, filename));
       } finally {
         fs.unlinkSync(temporary);
       }
@@ -200,7 +202,7 @@ async function main() {
       <button id="close-share">Close</button>
     </dialog>
     <section><h2>Student / family group</h2><p>Schedule/topics hi raat ko student group mein. Actual questions aur answers nahi.</p><a target="_blank" rel="noopener" href="${results.Schedule.filename}">Schedule PDF · ${results.Schedule.pages} pages</a><a href="${DATE}_Schedule_Message.txt">Message text file</a></section>
-    <section><h2>Parent only · raat ko ready rakhein</h2><p>Student test PDF agle din <b>3:30 PM</b> par dena. Solved key parent ke paas alag. Ye separation hai, password protection nahi.</p><a target="_blank" rel="noopener" href="${results.Student_Test.filename}">Student test · ${results.Student_Test.pages} pages</a><a target="_blank" rel="noopener" href="${results.Parent_Key.filename}">Solved parent key · ${results.Parent_Key.pages} page</a></section>
+    <section><h2>Parent only · raat ko ready rakhein</h2><p>Student test PDF agle din <b>3:30 PM</b> par dena. Solved key password-protected hai; password student ko na dein.</p><a target="_blank" rel="noopener" href="${results.Student_Test.filename}">Student test · ${results.Student_Test.pages} pages</a><a target="_blank" rel="noopener" href="${results.Parent_Key.filename}">Solved parent key · ${results.Parent_Key.pages} page</a></section>
     ${parts.map((part, index) => `<section><h2>Copy message ${index + 1}/${parts.length}</h2><button data-copy="part-${index}">Copy this part</button><p role="status" id="status-${index}"></p><textarea readonly id="part-${index}" aria-label="Schedule message part ${index + 1}">${escape(`13 Oct schedule ${index + 1}/${parts.length}\n\n${part}`)}</textarea></section>`).join("")}
     <script>
     const shareDialog=document.getElementById('share-dialog');

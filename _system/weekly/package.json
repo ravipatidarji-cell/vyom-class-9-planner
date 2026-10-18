@@ -5,7 +5,9 @@
   "description": "Local weekly planner PDFs with student answer space and separate parent keys",
   "scripts": {
     "build": "node generate.cjs",
-    "verify": "node verify.cjs"
+    "verify": "node verify.cjs",
+    "master": "node master.cjs",
+    "test:admin": "node --test admin-users.test.cjs"
   },
   "dependencies": {
     "@fontsource/baloo-2": "^5.2.8",

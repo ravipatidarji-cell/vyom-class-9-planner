@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { chromium } = require("playwright-core");
+const { protectParentPdf } = require("./pdf-protection.cjs");
 const { browserExecutable, loadPlan, originalDate } = require("./generate.cjs");
 
 const ROOT = path.resolve(__dirname, "..", "..");
@@ -113,6 +114,7 @@ async function renderPdf(browser, pdfjs, html, destination, checks) {
     }
     await pdf.destroy();
     if (!text.includes(checks.requiredText)) throw new Error(`Generated PDF text check failed: ${checks.requiredText}`);
+    if (checks.answers) protectParentPdf(staged);
     fs.renameSync(staged, destination);
     console.log(`${destination} (${pdf.numPages} pages)`);
   } finally {

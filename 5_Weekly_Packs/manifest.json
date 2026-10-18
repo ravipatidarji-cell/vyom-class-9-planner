@@ -1,5 +1,5 @@
 {
-  "version": "v4 · 2026-10-12 · Sanskrit coverage",
+  "version": "v5 ? 2026-10-18 ? Calendar-aligned daily and weekly schedule",
   "start": "2026-10-12",
   "end": "2027-03-17",
   "weeks": [
@@ -9,60 +9,57 @@
       "firstDay": "2026-10-12",
       "lastDay": "2026-10-18",
       "days": 7,
-      "tasks": 49,
+      "tasks": 46,
       "testIds": [
-        "D2026-10-12",
         "D2026-10-13",
         "D2026-10-14",
         "D2026-10-15",
         "D2026-10-16",
         "D2026-10-17",
-        "D2026-10-18"
+        "T2026-10-18"
       ],
-      "questions": 50,
-      "answers": 50,
-      "studentPages": 24,
-      "parentPages": 9,
+      "questions": 56,
+      "answers": 56,
+      "studentPages": 25,
+      "parentPages": 11,
       "student": "../5_Weekly_Packs/01_2026-10-12_to_2026-10-18_Student.pdf",
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/01_2026-10-12_to_2026-10-18_Parent_Key.pdf",
       "audit": {
         "student": {
-          "tasks": 49,
-          "questions": 50,
+          "tasks": 46,
+          "questions": 56,
           "answers": 0,
           "tests": [
-            "D2026-10-12",
             "D2026-10-13",
             "D2026-10-14",
             "D2026-10-15",
             "D2026-10-16",
             "D2026-10-17",
-            "D2026-10-18"
+            "T2026-10-18"
           ],
           "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 24
+          "pages": 25
         },
         "parent": {
           "tasks": 0,
           "questions": 0,
-          "answers": 50,
+          "answers": 56,
           "tests": [],
           "keys": [
-            "D2026-10-12",
             "D2026-10-13",
             "D2026-10-14",
             "D2026-10-15",
             "D2026-10-16",
             "D2026-10-17",
-            "D2026-10-18"
+            "T2026-10-18"
           ],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 9
+          "pages": 11
         }
       }
     },
@@ -74,14 +71,14 @@
       "days": 7,
       "tasks": 36,
       "testIds": [
-        "T2026-10-19",
+        "D2026-10-22",
         "D2026-10-23",
         "D2026-10-24",
-        "D2026-10-25"
+        "T2026-10-25"
       ],
       "questions": 40,
       "answers": 40,
-      "studentPages": 21,
+      "studentPages": 22,
       "parentPages": 9,
       "student": "../5_Weekly_Packs/02_2026-10-19_to_2026-10-25_Student.pdf",
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/02_2026-10-19_to_2026-10-25_Parent_Key.pdf",
@@ -91,16 +88,16 @@
           "questions": 40,
           "answers": 0,
           "tests": [
-            "T2026-10-19",
+            "D2026-10-22",
             "D2026-10-23",
             "D2026-10-24",
-            "D2026-10-25"
+            "T2026-10-25"
           ],
           "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 21
+          "pages": 22
         },
         "parent": {
           "tasks": 0,
@@ -108,10 +105,10 @@
           "answers": 40,
           "tests": [],
           "keys": [
-            "T2026-10-19",
+            "D2026-10-22",
             "D2026-10-23",
             "D2026-10-24",
-            "D2026-10-25"
+            "T2026-10-25"
           ],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
@@ -126,52 +123,52 @@
       "firstDay": "2026-10-26",
       "lastDay": "2026-11-01",
       "days": 7,
-      "tasks": 42,
+      "tasks": 43,
       "testIds": [
-        "T2026-10-26",
+        "D2026-10-27",
         "D2026-10-28",
         "D2026-10-29",
         "D2026-10-30",
         "D2026-10-31",
-        "D2026-11-01"
+        "T2026-11-01"
       ],
-      "questions": 55,
-      "answers": 55,
-      "studentPages": 26,
+      "questions": 53,
+      "answers": 53,
+      "studentPages": 25,
       "parentPages": 11,
       "student": "../5_Weekly_Packs/03_2026-10-26_to_2026-11-01_Student.pdf",
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/03_2026-10-26_to_2026-11-01_Parent_Key.pdf",
       "audit": {
         "student": {
-          "tasks": 42,
-          "questions": 55,
+          "tasks": 43,
+          "questions": 53,
           "answers": 0,
           "tests": [
-            "T2026-10-26",
+            "D2026-10-27",
             "D2026-10-28",
             "D2026-10-29",
             "D2026-10-30",
             "D2026-10-31",
-            "D2026-11-01"
+            "T2026-11-01"
           ],
           "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 26
+          "pages": 25
         },
         "parent": {
           "tasks": 0,
           "questions": 0,
-          "answers": 55,
+          "answers": 53,
           "tests": [],
           "keys": [
-            "T2026-10-26",
+            "D2026-10-27",
             "D2026-10-28",
             "D2026-10-29",
             "D2026-10-30",
             "D2026-10-31",
-            "D2026-11-01"
+            "T2026-11-01"
           ],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
@@ -186,54 +183,51 @@
       "firstDay": "2026-11-02",
       "lastDay": "2026-11-08",
       "days": 7,
-      "tasks": 38,
+      "tasks": 35,
       "testIds": [
-        "T2026-11-02",
+        "D2026-11-02",
         "D2026-11-03",
         "D2026-11-04",
-        "D2026-11-05",
-        "D2026-11-06"
+        "D2026-11-05"
       ],
-      "questions": 51,
-      "answers": 51,
-      "studentPages": 23,
-      "parentPages": 10,
+      "questions": 32,
+      "answers": 32,
+      "studentPages": 18,
+      "parentPages": 6,
       "student": "../5_Weekly_Packs/04_2026-11-02_to_2026-11-08_Student.pdf",
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/04_2026-11-02_to_2026-11-08_Parent_Key.pdf",
       "audit": {
         "student": {
-          "tasks": 38,
-          "questions": 51,
+          "tasks": 35,
+          "questions": 32,
           "answers": 0,
           "tests": [
-            "T2026-11-02",
+            "D2026-11-02",
             "D2026-11-03",
             "D2026-11-04",
-            "D2026-11-05",
-            "D2026-11-06"
+            "D2026-11-05"
           ],
           "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 23
+          "pages": 18
         },
         "parent": {
           "tasks": 0,
           "questions": 0,
-          "answers": 51,
+          "answers": 32,
           "tests": [],
           "keys": [
-            "T2026-11-02",
+            "D2026-11-02",
             "D2026-11-03",
             "D2026-11-04",
-            "D2026-11-05",
-            "D2026-11-06"
+            "D2026-11-05"
           ],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 10
+          "pages": 6
         }
       }
     },
@@ -243,48 +237,51 @@
       "firstDay": "2026-11-09",
       "lastDay": "2026-11-15",
       "days": 7,
-      "tasks": 30,
+      "tasks": 33,
       "testIds": [
+        "D2026-11-12",
         "D2026-11-13",
-        "D2026-11-14",
-        "D2026-11-15"
+        "D2026-10-12",
+        "T2026-11-15"
       ],
-      "questions": 27,
-      "answers": 27,
-      "studentPages": 16,
-      "parentPages": 6,
+      "questions": 39,
+      "answers": 39,
+      "studentPages": 21,
+      "parentPages": 9,
       "student": "../5_Weekly_Packs/05_2026-11-09_to_2026-11-15_Student.pdf",
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/05_2026-11-09_to_2026-11-15_Parent_Key.pdf",
       "audit": {
         "student": {
-          "tasks": 30,
-          "questions": 27,
+          "tasks": 33,
+          "questions": 39,
           "answers": 0,
           "tests": [
+            "D2026-11-12",
             "D2026-11-13",
-            "D2026-11-14",
-            "D2026-11-15"
+            "D2026-10-12",
+            "T2026-11-15"
           ],
           "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 16
+          "pages": 21
         },
         "parent": {
           "tasks": 0,
           "questions": 0,
-          "answers": 27,
+          "answers": 39,
           "tests": [],
           "keys": [
+            "D2026-11-12",
             "D2026-11-13",
-            "D2026-11-14",
-            "D2026-11-15"
+            "D2026-10-12",
+            "T2026-11-15"
           ],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 6
+          "pages": 9
         }
       }
     },
@@ -296,13 +293,13 @@
       "days": 7,
       "tasks": 40,
       "testIds": [
-        "T2026-11-16",
+        "D2026-11-16",
         "D2026-11-17",
         "D2026-11-18",
         "D2026-11-19",
         "D2026-11-20",
         "D2026-11-21",
-        "D2026-11-22"
+        "T2026-11-22"
       ],
       "questions": 63,
       "answers": 63,
@@ -316,13 +313,13 @@
           "questions": 63,
           "answers": 0,
           "tests": [
-            "T2026-11-16",
+            "D2026-11-16",
             "D2026-11-17",
             "D2026-11-18",
             "D2026-11-19",
             "D2026-11-20",
             "D2026-11-21",
-            "D2026-11-22"
+            "T2026-11-22"
           ],
           "keys": [],
           "oversizedBlocks": 0,
@@ -336,13 +333,13 @@
           "answers": 63,
           "tests": [],
           "keys": [
-            "T2026-11-16",
+            "D2026-11-16",
             "D2026-11-17",
             "D2026-11-18",
             "D2026-11-19",
             "D2026-11-20",
             "D2026-11-21",
-            "D2026-11-22"
+            "T2026-11-22"
           ],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
@@ -359,58 +356,58 @@
       "days": 7,
       "tasks": 39,
       "testIds": [
-        "T2026-11-23",
-        "D2026-11-24",
-        "T2026-11-25",
+        "D2026-11-23",
+        "T2026-11-24",
+        "D2026-11-25",
         "D2026-11-26",
         "D2026-11-27",
         "D2026-11-28",
-        "D2026-11-29"
+        "T2026-11-29"
       ],
-      "questions": 74,
-      "answers": 74,
-      "studentPages": 30,
-      "parentPages": 14,
+      "questions": 85,
+      "answers": 85,
+      "studentPages": 31,
+      "parentPages": 15,
       "student": "../5_Weekly_Packs/07_2026-11-23_to_2026-11-29_Student.pdf",
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/07_2026-11-23_to_2026-11-29_Parent_Key.pdf",
       "audit": {
         "student": {
           "tasks": 39,
-          "questions": 74,
+          "questions": 85,
           "answers": 0,
           "tests": [
-            "T2026-11-23",
-            "D2026-11-24",
-            "T2026-11-25",
+            "D2026-11-23",
+            "T2026-11-24",
+            "D2026-11-25",
             "D2026-11-26",
             "D2026-11-27",
             "D2026-11-28",
-            "D2026-11-29"
+            "T2026-11-29"
           ],
           "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 30
+          "pages": 31
         },
         "parent": {
           "tasks": 0,
           "questions": 0,
-          "answers": 74,
+          "answers": 85,
           "tests": [],
           "keys": [
-            "T2026-11-23",
-            "D2026-11-24",
-            "T2026-11-25",
+            "D2026-11-23",
+            "T2026-11-24",
+            "D2026-11-25",
             "D2026-11-26",
             "D2026-11-27",
             "D2026-11-28",
-            "D2026-11-29"
+            "T2026-11-29"
           ],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 14
+          "pages": 15
         }
       }
     },
@@ -420,60 +417,60 @@
       "firstDay": "2026-11-30",
       "lastDay": "2026-12-06",
       "days": 7,
-      "tasks": 40,
+      "tasks": 38,
       "testIds": [
-        "T2026-11-30",
+        "D2026-11-30",
         "D2026-12-01",
         "D2026-12-02",
         "D2026-12-03",
         "D2026-12-04",
         "D2026-12-05",
-        "D2026-12-06"
+        "T2026-12-06"
       ],
-      "questions": 61,
-      "answers": 61,
-      "studentPages": 28,
-      "parentPages": 12,
+      "questions": 74,
+      "answers": 74,
+      "studentPages": 32,
+      "parentPages": 14,
       "student": "../5_Weekly_Packs/08_2026-11-30_to_2026-12-06_Student.pdf",
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/08_2026-11-30_to_2026-12-06_Parent_Key.pdf",
       "audit": {
         "student": {
-          "tasks": 40,
-          "questions": 61,
+          "tasks": 38,
+          "questions": 74,
           "answers": 0,
           "tests": [
-            "T2026-11-30",
+            "D2026-11-30",
             "D2026-12-01",
             "D2026-12-02",
             "D2026-12-03",
             "D2026-12-04",
             "D2026-12-05",
-            "D2026-12-06"
+            "T2026-12-06"
           ],
           "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 28
+          "pages": 32
         },
         "parent": {
           "tasks": 0,
           "questions": 0,
-          "answers": 61,
+          "answers": 74,
           "tests": [],
           "keys": [
-            "T2026-11-30",
+            "D2026-11-30",
             "D2026-12-01",
             "D2026-12-02",
             "D2026-12-03",
             "D2026-12-04",
             "D2026-12-05",
-            "D2026-12-06"
+            "T2026-12-06"
           ],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 12
+          "pages": 14
         }
       }
     },
@@ -483,42 +480,36 @@
       "firstDay": "2026-12-07",
       "lastDay": "2026-12-13",
       "days": 7,
-      "tasks": 20,
-      "testIds": [
-        "T2026-12-07"
-      ],
-      "questions": 38,
-      "answers": 38,
-      "studentPages": 20,
-      "parentPages": 8,
+      "tasks": 21,
+      "testIds": [],
+      "questions": 0,
+      "answers": 0,
+      "studentPages": 10,
+      "parentPages": 2,
       "student": "../5_Weekly_Packs/09_2026-12-07_to_2026-12-13_Student.pdf",
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/09_2026-12-07_to_2026-12-13_Parent_Key.pdf",
       "audit": {
         "student": {
-          "tasks": 20,
-          "questions": 38,
+          "tasks": 21,
+          "questions": 0,
           "answers": 0,
-          "tests": [
-            "T2026-12-07"
-          ],
+          "tests": [],
           "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 20
+          "pages": 10
         },
         "parent": {
           "tasks": 0,
           "questions": 0,
-          "answers": 38,
+          "answers": 0,
           "tests": [],
-          "keys": [
-            "T2026-12-07"
-          ],
+          "keys": [],
           "oversizedBlocks": 0,
           "horizontalOverflow": false,
           "hindiFontLoaded": true,
-          "pages": 8
+          "pages": 2
         }
       }
     },
@@ -528,7 +519,7 @@
       "firstDay": "2026-12-14",
       "lastDay": "2026-12-20",
       "days": 7,
-      "tasks": 24,
+      "tasks": 21,
       "testIds": [],
       "questions": 0,
       "answers": 0,
@@ -538,7 +529,7 @@
       "parent": "../5_Weekly_Packs/Parent_Answer_Keys/10_2026-12-14_to_2026-12-20_Parent_Key.pdf",
       "audit": {
         "student": {
-          "tasks": 24,
+          "tasks": 21,
           "questions": 0,
           "answers": 0,
           "tests": [],
