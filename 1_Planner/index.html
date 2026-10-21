@@ -56,6 +56,12 @@ section.view{padding-top:20px}
 .daynav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .daynav button,.chip{font:600 14px var(--body);border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer}
 .daynav input[type=date]{font:500 14px var(--body);border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:8px;padding:5px 8px}
+.alarm-settings{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.alarm-settings select,.alarm-task input[type=time]{font:500 13px var(--body);border:1px solid var(--rule);border-radius:7px;background:var(--sheet);color:var(--ink);padding:5px 7px}
+.alarm-status{font-size:12.5px;color:var(--muted)}
+.alarm-task{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px;font-size:13px;color:var(--muted)}
+.alarm-task input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.alarm-task input[type=time]{padding:3px 5px}
 .daytitle{font-family:var(--display);font-weight:700;font-size:26px;margin:16px 0 2px;line-height:1.15}
 .meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
 .pill{font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);letter-spacing:.02em}
@@ -307,6 +313,15 @@ a.btn:focus-visible, button.btn:focus-visible{outline:2px solid var(--accent);ou
       <button id="gotoday">Aaj</button>
       <button id="next" aria-label="Agla din">Agla →</button>
       <input type="date" id="pick" aria-label="Date chuno">
+    </div>
+    <div class="alarm-settings" aria-label="Alarm settings">
+      <button class="chip" id="alarm-enable" type="button">🔔 Alarms enable karein</button>
+      <label class="kd" for="alarm-tone">Alarm tune</label>
+      <select id="alarm-tone" aria-label="Alarm tune">
+        <option value="bell">Bell</option><option value="digital">Digital</option><option value="soft">Soft</option>
+      </select>
+      <button class="chip" id="alarm-test" type="button">Tune suno</button>
+      <span class="alarm-status" id="alarm-status" role="status" aria-live="polite"></span>
     </div>
     <div class="daytitle" id="dtitle"></div>
     <div class="meta" id="dmeta"></div>
@@ -1158,6 +1173,25 @@ function stats(){let tot=0,dn=0;DAYS.forEach(d=>{if(d.d>todayISO)return;tot+=d.t
 const META=P.meta||{};
 function CFG(){return Object.assign({r1:3,r2:7,mast:80,sunday:'',hwmax:45},S.settings.cfg||{})}
 function addDays(iso,n){const d=new Date(iso+'T00:00');d.setDate(d.getDate()+n);return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function defaultAlarmTime(task){
+  const slot=/^(\d{1,2}):(\d{2})[–-]/.exec(task.t);
+  if(slot){let hour=+slot[1];if(hour>=2&&hour<=6&&!(hour===6&&+slot[2]>=45))hour+=12;return String(hour).padStart(2,'0')+':'+slot[2]}
+  if(/^subah/i.test(task.t))return '07:00';
+  if(/^dopahar/i.test(task.t)||/^paper ke baad/i.test(task.t))return '12:00';
+  if(/^shaam/i.test(task.t))return '17:00';
+  if(/^raat/i.test(task.t))return '20:00';
+  return '09:00';
+}
+function alarmSettings(){return S.settings.alarms||(S.settings.alarms={enabled:false,tone:'bell'})}
+function updateAlarmControls(message){
+  const prefs=alarmSettings(),button=document.getElementById('alarm-enable'),tone=document.getElementById('alarm-tone'),status=document.getElementById('alarm-status');
+  if(button)button.textContent=prefs.enabled?'🔕 Alarms band karein':'🔔 Alarms enable karein';
+  if(tone)tone.value=prefs.tone||'bell';
+  if(status&&message)status.textContent=message;
+  else if(status)status.textContent=prefs.enabled
+    ?(typeof Notification==='undefined'?'Notifications is browser mein supported nahi hain.':Notification.permission==='granted'?'Aaj ke task alarms aur notifications on hain.':'Notification permission allow karein.')
+    :'Har task ka alarm tayyar hai; notifications shuru karne ke liye enable karein.';
+}
 function slotMin(t){let m=/^(\d+):(\d+)–(\d+):(\d+)/.exec(t.t);if(m){let a=+m[1]*60+ +m[2],b=+m[3]*60+ +m[4];return b-a}m=/(\d+) min/.exec(t.t);if(m)return +m[1];m=/(\d+) hr/.exec(t.t);if(m)return 60*m[1];return null}
 const isTuition=(d,t)=>d.ty==='school'&&/^(4:00–5:00|5:00–6:00)$/.test(t.t)&&t.k!=='test';
 function plannedSelf(d){let m=0,unk=0;d.ts.forEach(t=>{if(isTuition(d,t))return;const v=slotMin(t);if(v==null)unk++;else m+=v});return{m,unk}}
@@ -1194,6 +1228,7 @@ function renderDay(){
   const past=cur<todayISO;
   document.getElementById('tasks').innerHTML=d.ts.map((t,i)=>{
     const done=!!(st.done||{})[i]; const ms=isMissed(cur,i);
+    const alarm=(st.alarms||{})[i]||{}; const alarmTime=alarm.time||defaultAlarmTime(t); const alarmOn=alarm.enabled!==false;
     let sc='';
     if(t.test){const T=TESTS.find(x=>x.id===t.test);const tv=S.tests[t.test]||{};const v=tv.sc;const p=v!=null&&v!==''?Math.round(100*v/T.max):null;
       const L1=sheetLink(T),L2=sheetLink(T,1);
@@ -1207,7 +1242,7 @@ function renderDay(){
     const mctl=done?((st.late||{})[i]?`<div class="miss"><span class="tag ok">Catch-up me pura: ${fmtS(st.late[i])}</span></div>`:''):
       (ms?`<div class="miss"><span class="tag warn">Nahi hua: ${esc(ms.r)}${ms.auto?' (homework zyada — apne aap catch-up me)':''}</span> → backlog me hai${ms.auto?'':` <button class="chip" data-unmiss="${i}">Hatao</button>`}</div>`:
       `<div class="miss">Nahi ho paya? <select data-miss="${i}" aria-label="Reason"><option value="">— reason —</option>${REASONS.map(r=>`<option>${r}</option>`).join('')}</select></div>`);
-    return `<div class="task ${done?'done':''}" style="--c:var(--${t.s})"><div class="tm">${esc(t.t)}</div><input type="checkbox" id="tk-${i}" data-i="${i}" ${done?'checked':''} aria-label="Ho gaya"><div class="body"><div class="tags"><span class="sj">${SUBN(t.s)}</span><span class="kd">· ${KIND[t.k]||''}${slotMin(t)?` · ${slotMin(t)} min`:''}</span></div><label class="x" for="tk-${i}">${esc(t.x.split(' · Sheet:')[0].split(' · Paper:')[0])}</label>${resBtns}${sc}${taught}${mctl}</div></div>`}).join('')||'<div class="empty">Aaj koi task nahi.</div>';
+    return `<div class="task ${done?'done':''}" style="--c:var(--${t.s})"><div class="tm">${esc(t.t)}</div><input type="checkbox" id="tk-${i}" data-i="${i}" ${done?'checked':''} aria-label="Ho gaya"><div class="body"><div class="tags"><span class="sj">${SUBN(t.s)}</span><span class="kd">· ${KIND[t.k]||''}${slotMin(t)?` · ${slotMin(t)} min`:''}</span></div><label class="x" for="tk-${i}">${esc(t.x.split(' · Sheet:')[0].split(' · Paper:')[0])}</label><div class="alarm-task"><label><input type="checkbox" data-alarm-enabled="${i}" ${alarmOn?'checked':''}> Alarm</label><input type="time" data-alarm-time="${i}" value="${esc(alarmTime)}" aria-label="Task alarm time" ${alarmOn?'':'disabled'}></div>${resBtns}${sc}${taught}${mctl}</div></div>`}).join('')||'<div class="empty">Aaj koi task nahi.</div>';
   renderDailyChapters();
   // day box: planned vs actual minutes, homework overload
   const pl=plannedSelf(d);const c=CFG();const hw=st.hw;const over=hw!=null&&hw!==''&&+hw>c.hwmax;
@@ -1241,6 +1276,7 @@ function isMissedRaw(st,i,date=cur){return !!(st.miss&&st.miss[i])||(!!st.heavy&
 function setTaskDone(date,index,checked){
   const st=dayState(date);
   st.done=Object.assign({},st.done,{[index]:checked});
+  if(checked)stopAlarmTune();
   if(checked&&isMissedRaw(st,index,date)&&date<todayISO)st.late=Object.assign({},st.late,{[index]:todayISO});
   save('days',date);
 }
@@ -1257,6 +1293,8 @@ function mres(v){const [id,r]=v.split(':');const m=Object.assign({},S.mistakes[i
 function extras(){const r=[];Object.keys(S.days).forEach(d=>{(S.days[d].extra||[]).forEach(e=>{if(e.sc!=null&&e.sc!==''&&e.max)r.push(Object.assign({d},e))})});return r.sort((a,b)=>a.d<b.d?-1:1)}
 document.getElementById('tasks').addEventListener('change',e=>{
   const ds=e.target.dataset;const st=dayState(cur);
+  if(ds.alarmEnabled!==undefined){st.alarms=Object.assign({},st.alarms,{[ds.alarmEnabled]:Object.assign({},(st.alarms||{})[ds.alarmEnabled],{enabled:e.target.checked})});const time=document.querySelector(`[data-alarm-time="${ds.alarmEnabled}"]`);if(time)time.disabled=!e.target.checked;save('days',cur);return}
+  if(ds.alarmTime!==undefined){st.alarms=Object.assign({},st.alarms,{[ds.alarmTime]:Object.assign({},(st.alarms||{})[ds.alarmTime],{time:e.target.value})});save('days',cur);return}
   if(ds.miss!==undefined){if(!e.target.value)return;st.miss=Object.assign({},st.miss,{[ds.miss]:{r:e.target.value,at:todayISO}});save('days',cur);renderDay();return}
   if(ds.skip!==undefined){if(!e.target.value)return;S.tests[ds.skip]={skip:e.target.value};save('tests',ds.skip);renderAll();return}
   if(ds.taught!==undefined){st.taught=Object.assign({},st.taught,{[ds.taught]:e.target.value});save('days',cur);return}
@@ -1269,6 +1307,72 @@ const go=n=>{const i=Math.min(DAYS.length-1,Math.max(0,dayIdx[cur]+n));cur=DAYS[
 document.getElementById('prev').onclick=()=>go(-1);document.getElementById('next').onclick=()=>go(1);
 document.getElementById('gotoday').onclick=()=>{cur=clampDay(todayISO);renderDay()};
 document.getElementById('pick').onchange=e=>{if(e.target.value){cur=clampDay(e.target.value);renderDay()}};
+
+let alarmAudioContext=null,alarmRepeatTimer=null;
+function playAlarmTune(tone){
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx){updateAlarmControls('Is browser mein alarm sound supported nahi hai.');return}
+  try{
+    if(!alarmAudioContext)alarmAudioContext=new AudioCtx();
+    alarmAudioContext.resume().then(()=>{
+      const patterns={bell:[880,660,880],digital:[740,740,988],soft:[523,659,784]};
+      const notes=patterns[tone]||patterns.bell,now=alarmAudioContext.currentTime;
+      notes.forEach((frequency,index)=>{
+        const oscillator=alarmAudioContext.createOscillator(),gain=alarmAudioContext.createGain(),start=now+index*.24;
+        oscillator.frequency.value=frequency;oscillator.type='sine';gain.gain.setValueAtTime(.0001,start);
+        gain.gain.exponentialRampToValueAtTime(.18,start+.025);gain.gain.exponentialRampToValueAtTime(.0001,start+.2);
+        oscillator.connect(gain);gain.connect(alarmAudioContext.destination);oscillator.start(start);oscillator.stop(start+.21);
+      });
+    }).catch(error=>{console.warn('Alarm tune could not play:',error);updateAlarmControls('Alarm sound play nahi ho saka.')});
+  }catch(error){console.warn('Alarm tune could not play:',error);updateAlarmControls('Alarm sound play nahi ho saka.')}
+}
+function stopAlarmTune(){if(alarmRepeatTimer){clearInterval(alarmRepeatTimer);alarmRepeatTimer=null}}
+function triggerTaskAlarm(date,task,index){
+  const title='Vyom Planner · '+(SUB[task.s]||task.s.toUpperCase());
+  const body=task.x.split(' · Sheet:')[0].split(' · Paper:')[0];
+  playAlarmTune(alarmSettings().tone);
+  stopAlarmTune();alarmRepeatTimer=setInterval(()=>playAlarmTune(alarmSettings().tone),5000);
+  setTimeout(stopAlarmTune,20000);
+  if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
+  const options={body:'Ab shuru karein: '+body,tag:`vyom-task-${date}-${index}`,icon:'./icons/icon-192.png'};
+  const show=()=>{try{const notification=new Notification(title,options);notification.onclick=()=>{window.focus();cur=date;showTab('today');renderDay();notification.close()}}catch(error){console.warn('Task notification could not be shown:',error);updateAlarmControls('Notification nahi dikh saki; browser permission check karein.')}};
+  if('serviceWorker'in navigator&&navigator.serviceWorker.getRegistration){
+    navigator.serviceWorker.getRegistration().then(reg=>reg?reg.showNotification(title,options).catch(error=>{console.warn('Service worker notification failed:',error);show()}):show()).catch(error=>{console.warn('Service worker registration lookup failed:',error);show()});
+  }else show();
+}
+async function toggleTaskAlarms(){
+  const prefs=alarmSettings();
+  if(prefs.enabled){prefs.enabled=false;save('settings','alarms');updateAlarmControls('Task alarms band kar diye.');return}
+  prefs.enabled=true;save('settings','alarms');
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(AudioCtx){try{if(!alarmAudioContext)alarmAudioContext=new AudioCtx();alarmAudioContext.resume().catch(error=>console.warn('Alarm audio could not be enabled:',error))}catch(error){console.warn('Alarm audio could not be enabled:',error)}}
+  if(typeof Notification==='undefined'||!window.isSecureContext){updateAlarmControls('Alarm sound on hai jab app khula ho; notifications ke liye supported HTTPS app chahiye.');checkTaskAlarms();return}
+  let permission=Notification.permission;
+  if(permission==='default'){
+    try{permission=await Notification.requestPermission()}
+    catch(error){console.warn('Notification permission request failed:',error);updateAlarmControls('Alarm sound on hai jab app khula ho; notification permission request fail hui.');checkTaskAlarms();return}
+  }
+  if(permission!=='granted'){updateAlarmControls('Alarm sound on hai jab app khula ho; notifications ke liye browser permission allow karein.');checkTaskAlarms();return}
+  updateAlarmControls('Alarms aur notifications on hain. App ko background mein chalne dein.');
+  checkTaskAlarms();
+}
+function checkTaskAlarms(){
+  const now=new Date(),date=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10),prefs=alarmSettings();
+  if(!prefs.enabled)return;
+  const day=DAYS[dayIdx[date]];if(!day)return;
+  const current=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),state=S.days[date]||{},fired=state.alarmFired||{};
+  day.ts.forEach((task,index)=>{
+    const alarm=(state.alarms||{})[index]||{},time=alarm.time||defaultAlarmTime(task),key=date+' '+time;
+    if(alarm.enabled!==false&&time===current&&!(state.done||{})[index]&&fired[index]!==key){
+      state.alarmFired=Object.assign({},fired,{[index]:key});S.days[date]=state;save('days',date);triggerTaskAlarm(date,task,index);
+    }
+  });
+}
+document.getElementById('alarm-enable').addEventListener('click',toggleTaskAlarms);
+document.getElementById('alarm-tone').addEventListener('change',e=>{const prefs=alarmSettings();prefs.tone=e.target.value;save('settings','alarms');updateAlarmControls('Alarm tune save ho gayi.')});
+document.getElementById('alarm-test').addEventListener('click',()=>playAlarmTune(alarmSettings().tone));
+updateAlarmControls();
+setInterval(checkTaskAlarms,15000);
 
 // ---- week ----
 let wk=0;
